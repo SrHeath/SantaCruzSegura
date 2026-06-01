@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2 class="text-primary fw-bold mb-0">
+            <i class="bi bi-bar-chart-line-fill"></i> Análisis Estadístico de Incidentes
+        </h2>
+        <a href="{% url 'reporte_pdf' %}" class="btn btn-danger d-flex align-items-center gap-1 shadow-sm">
+            <i class="bi bi-file-earmark-pdf-fill"></i> Descargar Reporte PDF
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Incidentes por Tipo -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="fw-bold text-secondary mb-3">
+                <i class="bi bi-tags-fill text-primary"></i> Incidentes por Tipo
+            </h4>
+            <div class="d-flex flex-column gap-3">
+                {% for item in incidentes_por_tipo %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold text-dark">{{ item.tipo__nombre }}</span>
+                            <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3">{{ item.total }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {% widthratio item.total 10 100 %}%" aria-valuenow="{{ item.total }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center p-3 text-muted">
+                        <i class="bi bi-info-circle fs-3 d-block mb-1"></i> No hay datos disponibles para procesar.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Incidentes por Sector -->
+    <div class="col-lg-6 mb-4">
+        <div class="card border-0 shadow-sm p-4 h-100">
+            <h4 class="fw-bold text-secondary mb-3">
+                <i class="bi bi-geo-alt-fill text-success"></i> Incidentes por Sector (Barrio)
+            </h4>
+            <div class="d-flex flex-column gap-3">
+                {% for item in incidentes_por_sector %}
+                    <div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="fw-semibold text-dark">{{ item.sector__nombre }}</span>
+                            <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-3">{{ item.total }}</span>
+                        </div>
+                        <div class="progress" style="height: 8px; border-radius: 4px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {% widthratio item.total 10 100 %}%" aria-valuenow="{{ item.total }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center p-3 text-muted">
+                        <i class="bi bi-info-circle fs-3 d-block mb-1"></i> No hay datos disponibles para procesar.
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

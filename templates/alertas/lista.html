@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="text-primary fw-bold mb-1">
+            <i class="bi bi-bell-fill text-warning animate-bell"></i> Bandeja de Alertas
+        </h2>
+        <p class="text-muted">Centro de notificaciones y alertas de incidentes validados en tu zona de suscripción.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-10 mx-auto">
+        <div class="d-flex flex-column gap-3">
+            {% for alerta in alertas %}
+                <div class="card border-0 shadow-sm p-4 border-start border-4 {% if 'CRÍTICA' in alerta.mensaje or 'CRITICA' in alerta.mensaje %}border-danger bg-danger bg-opacity-5{% else %}border-primary bg-primary bg-opacity-5{% endif %}">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="d-inline-flex p-3 rounded-circle {% if 'CRÍTICA' in alerta.mensaje or 'CRITICA' in alerta.mensaje %}bg-danger bg-opacity-10 text-danger{% else %}bg-primary bg-opacity-10 text-primary{% endif %}">
+                            {% if 'CRÍTICA' in alerta.mensaje or 'CRITICA' in alerta.mensaje %}
+                                <i class="bi bi-exclamation-octagon-fill fs-4"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill fs-4"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1 flex-wrap gap-1">
+                                <span class="fw-bold {% if 'CRÍTICA' in alerta.mensaje or 'CRITICA' in alerta.mensaje %}text-danger{% else %}text-primary{% endif %}">
+                                    {% if 'CRÍTICA' in alerta.mensaje or 'CRITICA' in alerta.mensaje %}Alerta de Emergencia{% else %}Alerta Informativa{% endif %}
+                                </span>
+                                <span class="text-muted small"><i class="bi bi-clock"></i> {{ alerta.fecha|date:"d/m/Y H:i" }}</span>
+                            </div>
+                            <p class="mb-2 text-dark fs-6">{{ alerta.mensaje }}</p>
+                            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                                <span class="small text-muted"><i class="bi bi-geo-alt-fill"></i> Incidente relacionado: <strong>{{ alerta.incidente.titulo }}</strong></span>
+                                {% if alerta.incidente.pk %}
+                                    <a href="{% url 'incidente_detalle' alerta.incidente.pk %}" class="btn btn-sm {% if 'CRÍTICA' in alerta.mensaje or 'CRITICA' in alerta.mensaje %}btn-danger{% else %}btn-primary{% endif %} px-3">
+                                        Ver Incidente <i class="bi bi-chevron-right"></i>
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="card border-0 shadow-sm p-5 text-center text-muted">
+                    <i class="bi bi-bell-slash fs-1 d-block mb-2"></i>
+                    <h5 class="fw-bold mb-1">Sin alertas de seguridad</h5>
+                    <p class="mb-0 small">No se registran alertas recientes para tus barrios de suscripción.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

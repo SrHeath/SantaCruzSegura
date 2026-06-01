@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <h2 class="text-primary fw-bold text-center mb-1">
+            <i class="bi bi-sliders text-accent"></i> Configurar Suscripción a Alertas
+        </h2>
+        <p class="text-muted text-center">Configura tus preferencias de suscripción y recibe alertas de incidentes o predicciones en tiempo real en los barrios seleccionados.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card border-0 shadow-lg p-4">
+            <form method="post" action="{% url 'alerta_suscripcion_config' %}">
+                {% csrf_token %}
+                
+                <!-- Section 1: Reception Channels -->
+                <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-broadcast-pin"></i> 1. Canales de Recepción</h5>
+                <div class="row mb-4">
+                    <div class="col-md-6 mb-3">
+                        <label for="canal_preferido" class="form-label fw-semibold text-muted">Canal preferido</label>
+                        <select name="canal_preferido" id="canal_preferido" class="form-select">
+                            <option value="whatsapp" {% if canal_preferido == 'whatsapp' %}selected{% endif %}>WhatsApp API</option>
+                            <option value="telegram" {% if canal_preferido == 'telegram' %}selected{% endif %}>Telegram Bot</option>
+                            <option value="ambos" {% if canal_preferido == 'ambos' %}selected{% endif %}>Ambos canales</option>
+                        </select>
+                        <span class="text-muted small d-block mt-1"><i class="bi bi-info-circle"></i> Vincula tu teléfono en tu perfil para usar WhatsApp.</span>
+                    </div>
+                    <div class="col-md-6 mb-3 d-flex align-items-center">
+                        <div class="form-check form-switch bg-light p-3 rounded-3 border w-100 ms-0 ms-md-3">
+                            <input class="form-check-input ms-0 me-2 float-none" type="checkbox" name="recibir_predictivas" id="recibir_predictivas" {% if recibir_predictivas %}checked{% endif %}>
+                            <label class="form-check-label fw-bold text-dark" for="recibir_predictivas">Recibir alertas de IA predictivas</label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4 text-muted">
+
+                <!-- Section 2: Sectores a suscribir -->
+                <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-geo-fill"></i> 2. Sectores (Barrios) a suscribir</h5>
+                <p class="text-muted small mb-3">Marca los barrios de los cuales te interesa mantenerte al tanto de reportes de delincuencia.</p>
+                
+                <div class="row mb-4 g-3">
+                    {% for sector in sectores %}
+                        <div class="col-md-6">
+                            <div class="form-check p-3 bg-light rounded-3 border d-flex align-items-center gap-2">
+                                <input class="form-check-input ms-0" type="checkbox" name="sectores" value="{{ sector.pk }}" id="sector_{{ sector.pk }}" {% if sector.pk in suscritos_ids %}checked{% endif %}>
+                                <label class="form-check-label fw-semibold text-dark" for="sector_{{ sector.pk }}">
+                                    {{ sector.nombre }}
+                                </label>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-md-12 text-center text-muted py-4">
+                            <i class="bi bi-exclamation-circle fs-3"></i>
+                            <p class="mb-0 mt-2">No hay sectores creados en el sistema.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Action Button -->
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary px-5 py-2.5 fw-bold">
+                        <i class="bi bi-save-fill"></i> Guardar Configuración
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

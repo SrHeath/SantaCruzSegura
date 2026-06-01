@@ -1,0 +1,367 @@
+/* --- Modern Premium Design & Theme Tokens --- */
+:root {
+    --bg-primary: #f1f5f9;
+    --bg-card: rgba(255, 255, 255, 0.9);
+    --text-color: #0f172a; /* Slate 900 */
+    --text-muted: #334155; /* Slate 700 - AAA Contrast ratio on light bg */
+    --primary-color: #1d4ed8; /* Blue 700 - Cobalt Blue with high contrast */
+    --primary-hover: #1e40af; /* Blue 800 */
+    --accent-color: #0f766e;  /* Teal 700 - High Contrast Teal */
+    --accent-hover: #115e59;  /* Teal 800 */
+    --danger-color: #b91c1c;  /* Red 700 - High Contrast Red */
+    --warning-color: #b45309;  /* Amber 700 - High Contrast Amber */
+    --success-color: #15803d;  /* Green 700 - High Contrast Green */
+    --border-color: #cbd5e1;   /* Slate 300 - Clearer borders */
+    --radius-lg: 16px;
+    --radius-md: 10px;
+    --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-size-base: 1rem;
+    --shadow-sm: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+    --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.05), 0 4px 6px -4px rgb(0 0 0 / 0.05);
+    --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.05), 0 8px 10px -6px rgb(0 0 0 / 0.05);
+}
+
+body {
+    background-color: #f1f5f9;
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(29, 78, 216, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(15, 118, 110, 0.08) 0px, transparent 50%),
+        radial-gradient(at 50% 50%, rgba(29, 78, 216, 0.04) 0px, transparent 70%),
+        radial-gradient(at 100% 100%, rgba(15, 118, 110, 0.06) 0px, transparent 50%),
+        radial-gradient(at 0% 100%, rgba(29, 78, 216, 0.06) 0px, transparent 50%);
+    background-attachment: fixed;
+    background-size: cover;
+    color: var(--text-color);
+    font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+    font-size: var(--font-size-base);
+    min-height: 100vh;
+    transition: var(--transition);
+    position: relative;
+}
+
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: -1;
+    background-image: radial-gradient(rgba(15, 23, 42, 0.035) 1.5px, transparent 1.5px);
+    background-size: 24px 24px;
+    pointer-events: none;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+/* Glassmorphic Card Designs */
+.card {
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: rgba(37, 99, 235, 0.25);
+}
+
+/* Custom Premium Buttons */
+.btn {
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    padding: 0.6rem 1.2rem;
+    transition: var(--transition);
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.4);
+}
+
+.btn-accent {
+    background-color: var(--accent-color);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 10px rgba(13, 148, 136, 0.25);
+}
+
+.btn-accent:hover {
+    background-color: var(--accent-hover);
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(13, 148, 136, 0.4);
+}
+
+.btn-outline-primary {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--primary-color);
+    color: #ffffff;
+}
+
+/* Premium Navbar Styling */
+.navbar {
+    background-color: #0f172a !important; /* Solid dark Slate-900 for guaranteed contrast */
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.navbar-brand {
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #38bdf8 !important; /* Fallback for older/strict browsers */
+    background: linear-gradient(to right, #60a5fa, #38bdf8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Ensure navbar items remain bright on dark background (overriding global light-theme text overrides) */
+.navbar .nav-link {
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85) !important;
+    transition: var(--transition);
+}
+
+.navbar .nav-link:hover {
+    color: #ffffff !important;
+}
+
+.navbar .text-info {
+    color: #38bdf8 !important; /* Bright cyan/blue for dark navbar */
+}
+
+.navbar .text-warning {
+    color: #fbbf24 !important; /* Bright amber/yellow for dark navbar */
+}
+
+.navbar .text-success {
+    color: #34d399 !important; /* Bright green/emerald for dark navbar */
+}
+
+.nav-link:hover {
+    color: #ffffff !important;
+}
+
+.nav-link::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 2px;
+    left: 8px;
+    background-color: var(--accent-color);
+    transition: var(--transition);
+}
+
+.nav-link:hover::after {
+    width: calc(100% - 16px);
+}
+
+/* Modern Badges */
+.badge {
+    padding: 0.5em 0.85em;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+/* Custom Table Design */
+.table-responsive {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    background-color: #f8fafc;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: #475569;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 1rem;
+}
+
+.table td {
+    padding: 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.table th {
+    background-color: #f1f5f9;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    color: #0f172a;
+    border-bottom: 2px solid #cbd5e1;
+    padding: 1rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #f8fafc;
+    transition: var(--transition);
+}
+
+/* Alerts custom styling */
+.alert {
+    border-radius: var(--radius-md);
+    border: none;
+    box-shadow: var(--shadow-sm);
+}
+
+/* --- ACCESSIBILITY STYLES (RNF14-18) --- */
+
+/* Large Text Size Mode */
+body.large-text {
+    --font-size-base: 1.25rem;
+}
+
+body.large-text h1 { font-size: 2.5rem; }
+body.large-text h2 { font-size: 2rem; }
+body.large-text h3 { font-size: 1.75rem; }
+body.large-text p, body.large-text li, body.large-text td { font-size: 1.25rem; }
+body.large-text .btn {
+    padding: 0.75rem 1.5rem;
+    font-size: 1.2rem;
+}
+
+/* Big Buttons / Elderly Mode */
+body.elderly-mode {
+    --radius-lg: 20px;
+    --radius-md: 15px;
+}
+
+body.elderly-mode .btn {
+    padding: 1.2rem 2.5rem !important;
+    font-size: 1.4rem !important;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2) !important;
+}
+
+body.elderly-mode input, body.elderly-mode select, body.elderly-mode textarea {
+    font-size: 1.3rem !important;
+    padding: 1rem !important;
+}
+
+/* Accessibility Control Bar */
+.accessibility-bar {
+    background-color: #f8fafc !important; /* Lighter background for high text contrast */
+    border-bottom: 1px solid #e2e8f0 !important;
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+}
+
+
+
+/* --- Global Contrast & Accessibility Overrides --- */
+
+/* Force high-contrast values on default Bootstrap classes for text */
+.text-muted {
+    color: var(--text-muted) !important;
+}
+
+.text-secondary {
+    color: var(--text-muted) !important;
+}
+
+.form-text, .help-block, .form-text-muted {
+    color: var(--text-muted) !important;
+    font-weight: 500;
+}
+
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-warning, .text-warning-emphasis {
+    color: var(--warning-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+.text-info, .text-info-emphasis {
+    color: var(--accent-color) !important;
+}
+
+/* Ensure labels are extremely clear and readable */
+label, .form-label {
+    color: #0f172a !important; /* Slate 900 */
+    font-weight: 600 !important;
+}
+
+/* Ensure placeholder text has enough contrast */
+::placeholder, .form-control::placeholder {
+    color: #475569 !important; /* Slate 600 */
+    opacity: 0.9 !important;
+}
+
+/* Table headers styling for high contrast */
+/* Enhanced Badges readability */
+.badge.bg-secondary {
+    background-color: #475569 !important; /* Slate 600 */
+    color: #ffffff !important;
+}
+
+.badge.bg-secondary.bg-opacity-10 {
+    background-color: rgba(71, 85, 105, 0.15) !important;
+    color: #0f172a !important; /* Slate 900 text instead of light secondary gray */
+}
+
+/* Ensure input borders are visible and distinct */
+.form-control, .form-select {
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 0.25rem rgba(29, 78, 216, 0.2) !important;
+}
+
+/* Outline buttons contrast enhancement */
+.btn-outline-secondary {
+    color: #1e293b !important; /* Slate 800 */
+    border-color: #475569 !important;
+}
+
+.btn-outline-secondary:hover {
+    color: #ffffff !important;
+    background-color: #334155 !important;
+    border-color: #334155 !important;
+}
+
+/* Navigation items contrast */
+.navbar-dark .navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+    color: #ffffff !important;
+}

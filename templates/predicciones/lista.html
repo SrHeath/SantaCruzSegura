@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <h2 class="text-primary fw-bold mb-1">
+            <i class="bi bi-cpu-fill text-warning"></i> Predicciones de Riesgo por Zona (IA)
+        </h2>
+        <p class="text-muted">Utiliza el modelo predictivo de Inteligencia Artificial para evaluar la probabilidad de riesgo delictivo en puntos geográficos específicos.</p>
+    </div>
+</div>
+
+<!-- Calculator Card -->
+<div class="card border-0 shadow-sm p-4 mb-4">
+    <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-calculator"></i> Calcular Riesgo en una Zona</h5>
+    <form method="post" class="row g-3 align-items-end">
+        {% csrf_token %}
+        <div class="col-md-3">
+            <label class="form-label fw-semibold text-muted">Latitud</label>
+            <input type="number" step="0.000001" name="latitud" class="form-control" placeholder="-17.783300" required>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label fw-semibold text-muted">Longitud</label>
+            <input type="number" step="0.000001" name="longitud" class="form-control" placeholder="-63.182100" required>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold text-muted">Sector / Barrio</label>
+            <select name="sector" class="form-select" required>
+                <option value="">Seleccione...</option>
+                {% for sector in sectores %}
+                    <option value="{{ sector.pk }}">{{ sector.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label fw-semibold text-muted">Tipo de Delito</label>
+            <select name="tipo" class="form-select" required>
+                <option value="">Seleccione...</option>
+                {% for tipo in tipos %}
+                    <option value="{{ tipo.pk }}">{{ tipo.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-primary w-100 py-2.5 fw-bold" type="submit">
+                <i class="bi bi-play-fill"></i> Calcular
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Prediction Results Alert -->
+{% if prediction %}
+    <div class="alert alert-warning border-start border-warning border-3 shadow-sm alert-dismissible fade show p-4 mb-4" role="alert">
+        <div class="d-flex align-items-start gap-3">
+            <span class="d-inline-flex p-3 rounded-circle bg-warning bg-opacity-15 text-warning-emphasis">
+                <i class="bi bi-exclamation-triangle-fill fs-3"></i>
+            </span>
+            <div class="flex-grow-1">
+                <h4 class="alert-heading fw-bold mb-1">Resultado del Análisis de Riesgo</h4>
+                <p class="mb-3 text-dark">La IA ha procesado los datos de coordenadas y tipo de delito, calculando la probabilidad de ocurrencia:</p>
+                <div class="row g-2 mb-2">
+                    <div class="col-sm-6">
+                        <strong>Probabilidad de ocurrencia:</strong> 
+                        <span class="badge {% if prediction.probabilidad > 70 %}bg-danger{% elif prediction.probabilidad > 40 %}bg-warning text-dark{% else %}bg-success{% endif %} fs-6 py-2 px-3">
+                            {{ prediction.probabilidad|floatformat:2 }}%
+                        </span>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Sector / Barrio:</strong> <span class="text-dark">{{ prediction.sector }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Tipo de delito analizado:</strong> <span class="text-dark">{{ prediction.tipo }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <strong>Fecha del cálculo:</strong> <span class="text-dark small">{{ prediction.fecha }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+{% endif %}
+
+<!-- Predictions History -->
+<div class="card border-0 shadow-sm p-4">
+    <h5 class="fw-bold text-secondary mb-3"><i class="bi bi-clock-history"></i> Historial de Análisis Predictivos</h5>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Sector / Barrio</th>
+                    <th>Tipo de Delito</th>
+                    <th>Probabilidad de Riesgo</th>
+                    <th>Fecha de Consulta</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in predicciones %}
+                    <tr>
+                        <td><strong>{{ item.sector }}</strong></td>
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                                {{ item.tipo }}
+                            </span>
+                        </td>
+                        <td style="width: 35%;">
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="height: 12px; border-radius: 6px;">
+                                    <div class="progress-bar {% if item.probabilidad > 70 %}bg-danger{% elif item.probabilidad > 40 %}bg-warning{% else %}bg-success{% endif %}"
+                                         role="progressbar"
+                                         style="width: {{ item.probabilidad|floatformat:0 }}%"
+                                         aria-valuenow="{{ item.probabilidad }}"
+                                         aria-valuemin="0"
+                                         aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <span class="fw-bold text-dark small" style="min-width: 60px; text-align: right;">
+                                    {{ item.probabilidad|floatformat:2 }}%
+                                </span>
+                            </div>
+                        </td>
+                        <td><span class="small text-muted">{{ item.fecha|date:"d/m/Y H:i" }}</span></td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                            <i class="bi bi-database-exclamation fs-3 d-block mb-1"></i> No se registran predicciones previas.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

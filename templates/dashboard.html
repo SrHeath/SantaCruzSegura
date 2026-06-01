@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <!-- Hero Welcome Section -->
+        <div class="card p-5 border-0 rounded-4 text-white shadow-lg mb-4" style="background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="display-5 fw-bold mb-2">Bienvenido, {{ user.get_full_name|default:user.username }}</h1>
+                    <p class="lead opacity-75 mb-3">Portal de Gestión y Análisis Predictivo de Seguridad Ciudadana de Santa Cruz.</p>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-info text-dark px-3 py-2 fs-6">
+                            <i class="bi bi-person-badge"></i> Rol: {{ user.rol.nombre|default:"Vecino" }}
+                        </span>
+                        {% if user.barrio %}
+                            <span class="badge bg-success px-3 py-2 fs-6">
+                                <i class="bi bi-geo-alt"></i> Barrio: {{ user.barrio.nombre }}
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="col-md-4 d-none d-md-block text-end">
+                    <i class="bi bi-shield-lock text-info opacity-50" style="font-size: 8rem;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Access Navigation Grid -->
+        <h3 class="text-secondary mb-4"><i class="bi bi-grid-fill"></i> Accesos Rápidos</h3>
+        <div class="row">
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 p-4 border-0 shadow-sm glass-card text-center">
+                    <div class="mb-3">
+                        <span class="d-inline-flex p-3 rounded-3 bg-primary bg-opacity-10 text-primary">
+                            <i class="bi bi-list-task fs-2"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold">Incidentes</h5>
+                    <p class="text-muted small">Explora la lista completa de reportes, busca y filtra incidentes en tu zona.</p>
+                    <a href="{% url 'incidente_lista' %}" class="btn btn-outline-primary btn-sm mt-auto w-100">
+                        Ver Lista <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 p-4 border-0 shadow-sm glass-card text-center">
+                    <div class="mb-3">
+                        <span class="d-inline-flex p-3 rounded-3 bg-success bg-opacity-10 text-success">
+                            <i class="bi bi-map fs-2"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold">Mapa Interactivo</h5>
+                    <p class="text-muted small">Visualiza en tiempo real los incidentes georreferenciados en el mapa de la ciudad.</p>
+                    <a href="{% url 'incidente_mapa' %}" class="btn btn-outline-success btn-sm mt-auto w-100">
+                        Ver Mapa <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 p-4 border-0 shadow-sm glass-card text-center">
+                    <div class="mb-3">
+                        <span class="d-inline-flex p-3 rounded-3 bg-danger bg-opacity-10 text-danger">
+                            <i class="bi bi-bar-chart-line fs-2"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold">Estadísticas</h5>
+                    <p class="text-muted small">Analiza gráficos e informes de criminalidad y descarga el reporte en formato PDF.</p>
+                    <a href="{% url 'estadisticas_dashboard' %}" class="btn btn-outline-danger btn-sm mt-auto w-100">
+                        Ver Análisis <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3 mb-4">
+                <div class="card h-100 p-4 border-0 shadow-sm glass-card text-center">
+                    <div class="mb-3">
+                        <span class="d-inline-flex p-3 rounded-3 bg-warning bg-opacity-10 text-warning">
+                            <i class="bi bi-cpu fs-2"></i>
+                        </span>
+                    </div>
+                    <h5 class="fw-bold">IA Predictiva</h5>
+                    <p class="text-muted small">Consulta el modelo de inteligencia artificial para evaluar riesgos delictivos en cualquier zona.</p>
+                    <a href="{% url 'prediccion_lista' %}" class="btn btn-outline-warning btn-sm mt-auto w-100 text-dark">
+                        Ver Predicciones <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

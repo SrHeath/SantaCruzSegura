@@ -1,0 +1,110 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa Cruz Segura Predictiva</title>
+    {% block head_extra %}{% endblock %}
+    <!-- Google Fonts: Outfit & Inter (async load) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"></noscript>
+    <!-- Bootstrap 5 -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"></noscript>
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"></noscript>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+<!-- Control de Accesibilidad (RNF14-RNF18) -->
+<div class="accessibility-bar d-flex justify-content-between align-items-center py-2 px-3">
+    <div class="d-flex gap-2">
+        <button id="toggle-text-size" class="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" onclick="toggleTextSize()">
+            <i class="bi bi-zoom-in"></i> Texto Grande
+        </button>
+        <button id="toggle-elderly" class="btn btn-sm btn-outline-dark d-flex align-items-center gap-1" onclick="toggleElderly()">
+            <i class="bi bi-person-fill-check"></i> Modo Adulto Mayor
+        </button>
+    </div>
+    <span class="text-muted text-end small fw-semibold">
+        <i class="bi bi-universal-access-circle fs-6 align-middle"></i> Accesibilidad Activa
+    </span>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-dark mb-4 py-3">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'dashboard' %}">
+            <i class="bi bi-shield-lock-fill fs-4 text-info"></i>
+            <span>Santa Cruz Segura</span>
+        </a>
+        <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-1">
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link" href="{% url 'incidente_lista' %}"><i class="bi bi-list-task"></i> Incidentes</a></li>
+                    <li class="nav-item"><a class="nav-link text-info fw-semibold" href="{% url 'incidente_crear' %}"><i class="bi bi-exclamation-triangle-fill"></i> Reportar</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'incidente_mapa' %}"><i class="bi bi-map"></i> Mapa</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'estadisticas_dashboard' %}"><i class="bi bi-bar-chart-line"></i> Estadísticas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'prediccion_lista' %}"><i class="bi bi-cpu"></i> Predicciones</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'alerta_lista' %}"><i class="bi bi-bell"></i> Alertas</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'alerta_suscripcion_config' %}"><i class="bi bi-sliders"></i> Suscripción</a></li>
+                    {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
+                        <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'incidente_bandeja_validacion' %}"><i class="bi bi-shield-check"></i> Validación</a></li>
+                    {% endif %}
+                {% endif %}
+            </ul>
+            <ul class="navbar-nav gap-2">
+                {% if user.is_authenticated %}
+                    <li class="nav-item"><a class="nav-link d-flex align-items-center gap-1" href="{% url 'perfil' %}"><i class="bi bi-person-circle fs-5"></i> {{ user.username }}</a></li>
+                    <li class="nav-item">
+                        <form action="{% url 'logout' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-light btn-sm w-100 py-2 px-3 mt-1 mt-lg-0 border-0 text-start text-lg-center"><i class="bi bi-box-arrow-right"></i> Salir</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li class="nav-item"><a class="btn btn-info btn-sm text-white px-3 py-2" href="{% url 'login' %}"><i class="bi bi-box-arrow-in-right"></i> Ingresar</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+<div class="container">
+    {% if messages %}
+        <div class="mb-3">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</div>
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+<script>
+(function() {
+    if (localStorage.getItem('large-text') === 'true') document.body.classList.add('large-text');
+    if (localStorage.getItem('elderly-mode') === 'true') document.body.classList.add('elderly-mode');
+})();
+function toggleTextSize() {
+    const isLarge = document.body.classList.toggle('large-text');
+    localStorage.setItem('large-text', isLarge);
+}
+function toggleElderly() {
+    const isElderly = document.body.classList.toggle('elderly-mode');
+    localStorage.setItem('elderly-mode', isElderly);
+}
+</script>
+{% endblock %}
+</body>
+</html>

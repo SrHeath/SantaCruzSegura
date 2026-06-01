@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
+    <div class="col-md-5">
+        <div class="card border-0 shadow-lg p-4">
+            <div class="text-center mb-4">
+                <span class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                    <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem;"></i>
+                </span>
+                <h2 class="fw-bold mb-1">Iniciar Sesión</h2>
+                <p class="text-muted">Ingresa a Santa Cruz Segura Predictiva</p>
+            </div>
+
+            {% if form.non_field_errors %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {% for error in form.non_field_errors %}
+                        <p class="mb-0 small"><i class="bi bi-exclamation-triangle-fill"></i> {{ error }}</p>
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {{ form.username|as_crispy_field }}
+                {{ form.password|as_crispy_field }}
+                <button type="submit" class="btn btn-primary w-100 py-2.5 mt-3 fw-bold">
+                    <i class="bi bi-box-arrow-in-right"></i> Ingresar
+                </button>
+            </form>
+
+            <hr class="my-4 text-muted">
+            <p class="text-center mb-0 text-muted">
+                ¿No tienes cuenta? <a href="{% url 'registro' %}" class="text-primary fw-semibold text-decoration-none">Regístrate aquí</a>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

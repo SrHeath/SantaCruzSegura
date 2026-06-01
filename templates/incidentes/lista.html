@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <h2 class="text-primary fw-bold mb-0">
+            <i class="bi bi-shield-fill-exclamation text-danger"></i> Incidentes Reportados
+        </h2>
+        <a href="{% url 'incidente_crear' %}" class="btn btn-danger d-flex align-items-center gap-1 shadow-sm">
+            <i class="bi bi-exclamation-triangle-fill"></i> Reportar Nuevo Incidente
+        </a>
+    </div>
+</div>
+
+<!-- Banner de Geolocalización Activa (GPS Filtro) -->
+{% if nearest_sector %}
+    <div class="alert alert-success d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2" role="alert">
+        <span class="d-flex align-items-center gap-2">
+            <i class="bi bi-geo-alt-fill fs-5 animate-pulse"></i> 
+            <span><strong>Ubicación GPS Activa:</strong> Filtrado automáticamente por tu zona más cercana (**{{ nearest_sector.nombre }}**).</span>
+        </span>
+        <a href="{% url 'incidente_lista' %}?sector=all" class="btn btn-sm btn-outline-success">
+            <i class="bi bi-globe"></i> Mostrar Todos
+        </a>
+    </div>
+{% endif %}
+
+<!-- Formulario de Filtros de Búsqueda -->
+<div class="card border-0 shadow-sm p-4 mb-4">
+    <form method="get" action="{% url 'incidente_lista' %}" id="filter-form" class="row g-3 align-items-end">
+        <!-- Mantener coordenadas GPS en el formulario si existen -->
+        {% if request.GET.gps_lat and request.GET.gps_lng %}
+            <input type="hidden" name="gps_lat" value="{{ request.GET.gps_lat }}">
+            <input type="hidden" name="gps_lng" value="{{ request.GET.gps_lng }}">
+        {% endif %}
+
+        <div class="col-md-4 col-sm-6">
+            <label for="sector" class="form-label fw-bold text-secondary">
+                <i class="bi bi-geo-alt"></i> Sector / Barrio
+            </label>
+            <select name="sector" id="sector" class="form-select">
+                <option value="all" {% if selected_sector == 'all' %}selected{% endif %}>Todos los sectores</option>
+                {% for s in sectores %}
+                    <option value="{{ s.pk }}" {% if selected_sector == s.pk|stringformat:"s" %}selected{% endif %}>{{ s.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <label for="tipo" class="form-label fw-bold text-secondary">
+                <i class="bi bi-tags"></i> Tipo de Delito
+            </label>
+            <select name="tipo" id="tipo" class="form-select">
+                <option value="all" {% if selected_tipo == 'all' %}selected{% endif %}>Todos los delitos</option>
+                {% for t in tipos %}
+                    <option value="{{ t.pk }}" {% if selected_tipo == t.pk|stringformat:"s" %}selected{% endif %}>{{ t.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3 col-sm-6">
+            <label for="fecha" class="form-label fw-bold text-secondary">
+                <i class="bi bi-calendar-event"></i> Rango de Fecha
+            </label>
+            <select name="fecha" id="fecha" class="form-select">
+                <option value="all" {% if selected_fecha == 'all' %}selected{% endif %}>Cualquier fecha</option>
+                <option value="24h" {% if selected_fecha == '24h' %}selected{% endif %}>Últimas 24 horas</option>
+                <option value="week" {% if selected_fecha == 'week' %}selected{% endif %}>Última semana</option>
+                <option value="month" {% if selected_fecha == 'month' %}selected{% endif %}>Último mes</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 col-sm-6">
+            <button type="submit" class="btn btn-accent w-100 py-2.5">
+                <i class="bi bi-search"></i> Filtrar
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Tabla de Resultados -->
+<div class="card border-0 shadow-sm p-4">
+    <div class="table-responsive" style="max-height: 550px; overflow-y: auto;">
+        <table class="table table-hover align-middle">
+            <thead class="table-light sticky-top">
+                <tr>
+                    <th>Título</th>
+                    <th>Sector / Barrio</th>
+                    <th>Tipo Delito</th>
+                    <th>Fecha y Hora</th>
+                    <th>Reportante</th>
+                    <th>Estado</th>
+                    <th class="text-center">Testigos</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for incidente in incidentes %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ incidente.titulo }}</div>
+                            <span class="text-muted small d-block text-truncate" style="max-width: 250px;">{{ incidente.direccion }}</span>
+                        </td>
+                        <td>{{ incidente.sector.nombre }}</td>
+                        <td>
+                            <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
+                                {{ incidente.tipo.nombre }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="small">{{ incidente.fecha_hora|date:"d/m/Y" }}</div>
+                            <div class="text-muted small">{{ incidente.fecha_hora|date:"H:i" }}</div>
+                        </td>
+                        <td>
+                            {% if incidente.reporte_anonimo %}
+                                {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
+                                    <span class="text-muted small"><i class="bi bi-eye-slash-fill"></i> Anónimo</span> <span class="text-xs text-primary">({{ incidente.reporte_por.username }})</span>
+                                {% else %}
+                                    <span class="text-muted small"><i class="bi bi-eye-slash-fill"></i> Anónimo</span>
+                                {% endif %}
+                            {% else %}
+                                {% if incidente.reporte_por %}
+                                    <span class="small">{{ incidente.reporte_por.username }}</span>
+                                {% else %}
+                                    <span class="text-muted small"><i class="bi bi-eye-slash-fill"></i> Anónimo</span>
+                                {% endif %}
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if incidente.estado == 'pendiente' %}
+                                <span class="badge bg-warning bg-opacity-15 text-warning-emphasis border border-warning border-opacity-25">
+                                    <i class="bi bi-hourglass-split"></i> Pendiente
+                                </span>
+                            {% elif incidente.estado == 'validado' %}
+                                <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25">
+                                    <i class="bi bi-shield-fill-check"></i> Validado
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-15 text-danger border border-danger border-opacity-25">
+                                    <i class="bi bi-shield-slash-fill"></i> Falso
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-info bg-opacity-15 text-info-emphasis border border-info border-opacity-25 rounded-pill px-3">
+                                <i class="bi bi-chat-right-text-fill"></i> {{ incidente.num_testigos }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'incidente_detalle' incidente.pk %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                <i class="bi bi-info-circle"></i> Detalle
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">
+                            <i class="bi bi-search fs-2"></i>
+                            <p class="mb-0 mt-2">No se encontraron incidentes que coincidan con los filtros.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Script GPS para Detección de Zona más Cercana -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        
+        // Ejecutar geolocalización automática solo si no se ha filtrado explícitamente y no hay coordenadas en URL
+        if (!urlParams.has('gps_lat') && !urlParams.has('sector')) {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Redirigir inyectando las coordenadas GPS para filtrar
+                    window.location.href = window.location.pathname + `?gps_lat=${lat}&gps_lng=${lng}`;
+                }, function(error) {
+                    console.log("No se pudo obtener ubicación GPS del dispositivo para filtro automático.");
+                }, {
+                    timeout: 5000
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
