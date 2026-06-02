@@ -1,7 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, DetailView, ListView, TemplateView
-from django.core.cache import cache
 
 from .forms import IncidenteForm
 from .models import Incidente, Sector, TipoDelito
@@ -108,12 +107,14 @@ class IncidenteCrearView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         if self.request.user.is_authenticated:
-            cache_key = f'incident_create_{self.request.user.id}'
-            count = cache.get(cache_key, 0)
-            if count >= 10:
-                messages.error(self.request, "Has excedido el límite de 10 reportes por hora. Intenta más tarde.")
+            limite = timezone.now() - timedelta(hours=1)
+            conteo = Incidente.objects.filter(
+                reporte_por=self.request.user,
+                fecha_hora__gte=limite
+            ).count()
+            if conteo >= 10:
+                messages.error(self.request, "Has excedido el limite de 10 reportes por hora. Intenta mas tarde.")
                 return redirect('incidente_lista')
-            cache.set(cache_key, count + 1, 3600)
 
         incidente_nuevo = form.save(commit=False)
         

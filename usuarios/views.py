@@ -1,39 +1,75 @@
+from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.contrib.auth.views import LoginView, LogoutView
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
-from django.core.cache import cache
 from django.http import HttpResponseForbidden
+from datetime import timedelta
 
+from auditoria.models import AuditLog
+from auditoria.middleware import get_client_ip
 from .forms import UsuarioRegistroForm, UsuarioActualizarForm, UsuarioRegistroPublicoForm
 from .models import Usuario
+
+MAX_LOGIN_ATTEMPTS_IP = 10
+LOGIN_BLOCK_MINUTES = 15
+
 
 class LoginUsuario(LoginView):
     template_name = 'login.html'
     redirect_authenticated_user = True
 
-    def form_valid(self, form):
-        cache_key = f'login_attempts_{self.request.META.get("REMOTE_ADDR", "unknown")}'
-        cache.delete(cache_key)
-        return super().form_valid(form)
+    def dispatch(self, request, *args, **kwargs):
+        ip = get_client_ip(request)
+        cutoff = timezone.now() - timedelta(minutes=LOGIN_BLOCK_MINUTES)
+        recent = AuditLog.objects.filter(
+            ip_origen=ip,
+            accion__in=['Login fallido', 'Intento login invalido'],
+            fecha__gte=cutoff
+        ).count()
+        if recent >= MAX_LOGIN_ATTEMPTS_IP:
+            return HttpResponseForbidden(
+                f"Demasiados intentos de login desde esta IP. Espera {LOGIN_BLOCK_MINUTES} minutos."
+            )
+        return super().dispatch(request, *args, **kwargs)
 
-    def form_invalid(self, form):
-        ip = self.request.META.get("REMOTE_ADDR", "unknown")
-        cache_key = f'login_attempts_{ip}'
-        attempts = cache.get(cache_key, 0)
-        cache.set(cache_key, attempts + 1, 300)
-        if attempts >= 5:
-            return HttpResponseForbidden("Demasiados intentos de login. Espera 5 minutos.")
-        return super().form_invalid(form)
 
 class RegistroUsuario(CreateView):
     form_class = UsuarioRegistroPublicoForm
     template_name = 'registro.html'
     success_url = reverse_lazy('dashboard')
 
+    def dispatch(self, request, *args, **kwargs):
+        if not getattr(settings, 'REGISTRATION_OPEN', False):
+            messages.error(request, "El registro publico esta deshabilitado.")
+            return redirect('login')
+        ip = get_client_ip(request)
+        cutoff = timezone.now() - timedelta(hours=1)
+        registros_recientes = AuditLog.objects.filter(
+            ip_origen=ip,
+            accion='Registro de usuario',
+            fecha__gte=cutoff
+        ).count()
+        if registros_recientes >= 3:
+            return HttpResponseForbidden(
+                "Has excedido el limite de registros. Intenta mas tarde."
+            )
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         response = super().form_valid(form)
+        ip = get_client_ip(self.request)
+        AuditLog.objects.create(
+            usuario=self.object,
+            accion='Registro de usuario',
+            modelo='Usuario',
+            registro_id=self.object.pk,
+            detalles=f'Nuevo usuario registrado: {self.object.username}',
+            ip_origen=ip,
+        )
         return redirect('login')
 
     def get(self, request, *args, **kwargs):
