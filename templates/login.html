@@ -2,15 +2,15 @@
 {% load crispy_forms_tags %}
 
 {% block content %}
-<div class="row justify-content-center align-items-center" style="min-height: 75vh;">
-    <div class="col-md-5">
-        <div class="card border-0 shadow-lg p-4">
+<div class="row justify-content-center align-items-center" style="min-height: 80vh; margin: 2rem 0;">
+    <div class="col-md-5 col-lg-4">
+        <div class="card border-0 shadow-lg p-4 p-md-5">
             <div class="text-center mb-4">
-                <span class="d-inline-flex p-3 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
-                    <i class="bi bi-shield-lock-fill" style="font-size: 2.5rem;"></i>
-                </span>
-                <h2 class="fw-bold mb-1">Iniciar Sesión</h2>
-                <p class="text-muted">Ingresa a Santa Cruz Segura Predictiva</p>
+                <div class="d-inline-flex p-4 rounded-circle bg-primary bg-opacity-10 text-primary mb-3">
+                    <i class="bi bi-shield-lock-fill" style="font-size: 3rem;"></i>
+                </div>
+                <h2 class="fw-bold mb-2">Bienvenido</h2>
+                <p class="text-muted small">Santa Cruz Segura Predictiva</p>
             </div>
 
             {% if form.non_field_errors %}
@@ -22,17 +22,21 @@
                 </div>
             {% endif %}
 
-            <form method="post" novalidate>
+            <form method="post" novalidate class="mt-3">
                 {% csrf_token %}
-                {{ form.username|as_crispy_field }}
-                {{ form.password|as_crispy_field }}
-                <button type="submit" class="btn btn-primary w-100 py-2.5 mt-3 fw-bold">
-                    <i class="bi bi-box-arrow-in-right"></i> Ingresar
+                <div class="mb-3">
+                    {{ form.username|as_crispy_field }}
+                </div>
+                <div class="mb-4">
+                    {{ form.password|as_crispy_field }}
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2.5 fw-bold shadow-sm">
+                    <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
                 </button>
             </form>
 
-            <hr class="my-4 text-muted">
-            <p class="text-center mb-0 text-muted">
+            <hr class="my-4 border-top">
+            <p class="text-center mb-0 text-muted small">
                 ¿No tienes cuenta? <a href="{% url 'registro' %}" class="text-primary fw-semibold text-decoration-none">Regístrate aquí</a>
             </p>
         </div>

@@ -2,10 +2,8 @@
 {% load static %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" media="print" onload="this.media='all'">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.heat/dist/leaflet-heat.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"></noscript>
-<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet.heat/dist/leaflet-heat.css"></noscript>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet.heat/dist/leaflet-heat.css">
 {% endblock %}
 
 {% block content %}
@@ -41,7 +39,7 @@ window.__INCIDENTES__ = [
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js" defer></script>
-<script src="{% static 'js/mapa_incidentes.js' %}" defer></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="{% static 'js/mapa_incidentes.js' %}"></script>
 {% endblock %}
