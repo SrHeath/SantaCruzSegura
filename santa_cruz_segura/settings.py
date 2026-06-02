@@ -173,6 +173,7 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 # CSRF
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', 'https://*.up.railway.app').split(',')]
 
 # Security Headers (enable HTTPS first)
 SECURE_BROWSER_XSS_FILTER = True
