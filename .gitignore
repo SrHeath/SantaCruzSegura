@@ -4,3 +4,8 @@ __pycache__/
 .env
 backups_local/
 backups_secundario/
+media/
+saved_models/
+*.sql
+Acticidad 1.txt
+Actividad 2.docx
