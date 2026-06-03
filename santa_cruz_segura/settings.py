@@ -83,6 +83,12 @@ WSGI_APPLICATION = 'santa_cruz_segura.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+DB_OPTIONS = {
+    'connect_timeout': 5,
+    'read_timeout': 30,
+    'charset': 'utf8mb4',
+}
+
 if os.environ.get('MYSQLHOST'):
     DATABASES = {
         'default': {
@@ -92,6 +98,7 @@ if os.environ.get('MYSQLHOST'):
             'PASSWORD': os.environ.get('MYSQLPASSWORD', ''),
             'HOST': os.environ['MYSQLHOST'],
             'PORT': os.environ.get('MYSQLPORT', '3306'),
+            'OPTIONS': DB_OPTIONS,
         }
     }
 else:
@@ -103,6 +110,7 @@ else:
             'PASSWORD': os.environ.get('DB_PASSWORD', ''),
             'HOST': os.environ.get('DB_HOST', '127.0.0.1'),
             'PORT': os.environ.get('DB_PORT', '3306'),
+            'OPTIONS': DB_OPTIONS,
         }
     }
 
@@ -134,7 +142,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es'
 
 TIME_ZONE = 'America/La_Paz'
 

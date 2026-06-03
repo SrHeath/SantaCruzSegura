@@ -5,12 +5,22 @@ from .models import Usuario, Rol
 from incidentes.models import Sector
 
 class UsuarioRegistroForm(UserCreationForm):
-    email = forms.EmailField(required=True, help_text='Requerido. Ingresa un email válido.')
+    email = forms.EmailField(required=True, help_text='Requerido. Ingresa un email valido.')
     first_name = forms.CharField(max_length=30, required=True, help_text='Requerido.')
     last_name = forms.CharField(max_length=150, required=True, help_text='Requerido.')
     telefono = forms.CharField(max_length=20, required=False, help_text='Opcional.')
     rol = forms.ModelChoiceField(queryset=Rol.objects.all(), required=True, help_text='Selecciona tu rol.')
-    barrio = forms.ModelChoiceField(queryset=Sector.objects.all(), required=False, help_text='Opcional. Selecciona tu barrio.')
+    barrio = forms.ModelChoiceField(queryset=Sector.objects.all(), required=False, help_text='Selecciona tu barrio.')
+    password1 = forms.CharField(
+        label='Contrasena',
+        widget=forms.PasswordInput,
+        help_text='Minimo 8 caracteres.',
+    )
+    password2 = forms.CharField(
+        label='Confirmar contrasena',
+        widget=forms.PasswordInput,
+        help_text='Repite la contrasena para confirmar.',
+    )
 
     class Meta:
         model = Usuario
@@ -25,11 +35,20 @@ class UsuarioRegistroForm(UserCreationForm):
             'password1',
             'password2',
         ]
+        labels = {
+            'username': 'Nombre de usuario',
+            'first_name': 'Nombres',
+            'last_name': 'Apellidos',
+            'email': 'Correo electronico',
+            'telefono': 'Telefono',
+            'rol': 'Rol',
+            'barrio': 'Barrio / Sector',
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
         if Usuario.objects.filter(email=email).exists():
-            raise forms.ValidationError('Este email ya está registrado.')
+            raise forms.ValidationError('Este email ya esta registrado.')
         return email
 
     def save(self, commit=True):
@@ -41,11 +60,21 @@ class UsuarioRegistroForm(UserCreationForm):
         return user
 
 class UsuarioRegistroPublicoForm(UserCreationForm):
-    email = forms.EmailField(required=True, help_text='Requerido. Ingresa un email válido.')
+    email = forms.EmailField(required=True, help_text='Requerido. Ingresa un email valido.')
     first_name = forms.CharField(max_length=30, required=True, help_text='Requerido.')
     last_name = forms.CharField(max_length=150, required=True, help_text='Requerido.')
     telefono = forms.CharField(max_length=20, required=False, help_text='Opcional.')
-    barrio = forms.ModelChoiceField(queryset=Sector.objects.all(), required=False, help_text='Opcional. Selecciona tu barrio.')
+    barrio = forms.ModelChoiceField(queryset=Sector.objects.all(), required=False, help_text='Selecciona tu barrio.')
+    password1 = forms.CharField(
+        label='Contrasena',
+        widget=forms.PasswordInput,
+        help_text='Minimo 8 caracteres.',
+    )
+    password2 = forms.CharField(
+        label='Confirmar contrasena',
+        widget=forms.PasswordInput,
+        help_text='Repite la contrasena para confirmar.',
+    )
 
     class Meta:
         model = Usuario
@@ -59,6 +88,14 @@ class UsuarioRegistroPublicoForm(UserCreationForm):
             'password1',
             'password2',
         ]
+        labels = {
+            'username': 'Nombre de usuario',
+            'first_name': 'Nombres',
+            'last_name': 'Apellidos',
+            'email': 'Correo electronico',
+            'telefono': 'Telefono',
+            'barrio': 'Barrio / Sector',
+        }
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
