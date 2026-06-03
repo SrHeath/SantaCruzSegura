@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditoria.middleware.ThreadLocalMiddleware',
     'auditoria.middleware.CSPMiddleware',
+    'auditoria.middleware.ErrorBoundaryMiddleware',
 ]
 
 ROOT_URLCONF = 'santa_cruz_segura.urls'
