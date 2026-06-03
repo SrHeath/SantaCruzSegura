@@ -44,10 +44,10 @@ class CSPMiddleware:
         response = self.get_response(request)
         response['Content-Security-Policy'] = (
             "default-src 'self'; "
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net; "
-            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; "
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net cdnjs.cloudflare.com; "
+            "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdnjs.cloudflare.com fonts.googleapis.com fonts.gstatic.com; "
             "font-src 'self' cdn.jsdelivr.net fonts.gstatic.com fonts.googleapis.com; "
-            "img-src 'self' data: mt1.google.com; "
+            "img-src 'self' data: *.tile.openstreetmap.org; "
             "connect-src 'self'; "
             "frame-src 'none'; "
             "base-uri 'self'; "

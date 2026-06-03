@@ -14,10 +14,20 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+import mimetypes
+import os
+
 from django.conf import settings
 from django.contrib import admin
+from django.http import FileResponse, Http404
 from django.urls import include, path, re_path
-from django.views.static import serve
+
+def media_serve(request, path):
+    file_path = os.path.join(settings.MEDIA_ROOT, path)
+    if not os.path.exists(file_path) or not file_path.startswith(str(settings.MEDIA_ROOT)):
+        raise Http404
+    content_type, _ = mimetypes.guess_type(file_path)
+    return FileResponse(open(file_path, 'rb'), content_type=content_type or 'application/octet-stream')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -29,6 +39,5 @@ urlpatterns = [
 ]
 
 urlpatterns += [
-    re_path(r'^media/(?P<path>.*)$', serve,
-            {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^media/(?P<path>.*)$', media_serve),
 ]

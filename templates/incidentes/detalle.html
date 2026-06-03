@@ -2,14 +2,13 @@
 {% load static %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 {% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-md-9 mx-auto">
         <div class="card border-0 shadow-lg p-4 mb-4">
-            <!-- Header Section -->
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <h2 class="text-primary fw-bold mb-0"><i class="bi bi-shield-fill-info"></i> Detalle de Incidente</h2>
                 <div class="d-flex gap-2">
@@ -28,10 +27,9 @@
                     {% endif %}
                 </div>
             </div>
-            
+
             <hr class="mb-4 text-muted">
-            
-            <!-- Metadata Grid -->
+
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded-3 border h-100">
@@ -53,7 +51,7 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded-3 border h-100">
                         <div class="mb-3">
@@ -89,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Incident Description -->
             <div class="mb-4">
                 <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-file-text"></i> Descripción de los Hechos</h5>
                 <div class="p-3 bg-light rounded-3 border text-dark" style="white-space: pre-line;">
@@ -97,7 +94,6 @@
                 </div>
             </div>
 
-            <!-- Incident Map -->
             <div class="mb-4">
                 <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-geo-alt"></i> Ubicacion del Suceso</h5>
                 <div class="bg-light p-2 rounded-3 border">
@@ -111,7 +107,6 @@
                 </div>
             </div>
 
-            <!-- Evidence Photo -->
             {% if incidente.imagen %}
                 <div class="mb-4">
                     <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-image"></i> Evidencia Fotográfica</h5>
@@ -124,7 +119,6 @@
                 </div>
             {% endif %}
 
-            <!-- Feed de Testimonios Adicionales -->
             <hr class="my-4">
             <h4 class="text-secondary mb-3"><i class="bi bi-chat-dots-fill"></i> Testimonios y Aportes Adicionales ({{ incidente.testigos.count }})</h4>
             <div class="witness-feed mb-4">
@@ -132,7 +126,7 @@
                     <div class="card bg-light p-3 mb-3 border-0 rounded-3 shadow-sm" style="background-color: #f8fafc !important;">
                         <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
                             <span class="fw-bold text-primary d-flex align-items-center gap-1">
-                                <i class="bi bi-person-circle fs-5"></i> 
+                                <i class="bi bi-person-circle fs-5"></i>
                                 {% if testigo.reporte_anonimo %}
                                     {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
                                         Anónimo (Aporte de: <strong>{% if testigo.usuario %}{{ testigo.usuario.username }}{% else %}Invitado{% endif %}</strong>)
@@ -149,11 +143,11 @@
                             </span>
                             <span class="text-muted small"><i class="bi bi-clock"></i> {{ testigo.fecha_reporte|date:"d/m/Y H:i" }}</span>
                         </div>
-                        
+
                         {% if testigo.comentario and testigo.comentario != 'None' %}
                             <p class="mb-2 text-dark p-2 bg-white rounded border-start border-primary border-3" style="white-space: pre-line;">{{ testigo.comentario }}</p>
                         {% endif %}
-                        
+
                         {% if testigo.imagen %}
                             <div class="mt-2">
                                 <a href="{{ testigo.imagen.url }}" target="_blank" class="d-inline-block">
@@ -170,7 +164,6 @@
                 {% endfor %}
             </div>
 
-            <!-- Footer Actions -->
             <div class="d-flex justify-content-between align-items-center mt-4">
                 <a href="{% url 'incidente_lista' %}" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-left"></i> Volver a la Lista
@@ -187,27 +180,19 @@
 
 {% block scripts %}
 {{ block.super }}
-<script src="{% static 'js/leaflet.js' %}"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
 (function() {
-    function initDetailMap() {
-        var el = document.getElementById('detail-map');
-        if (!el) return;
-        if (typeof L === 'undefined') return;
-        var map = L.map(el).setView([{{ incidente.latitud }}, {{ incidente.longitud }}], 15);
-        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            attribution: '© Google', maxZoom: 20
-        }).addTo(map);
-        L.circleMarker([{{ incidente.latitud }}, {{ incidente.longitud }}], {
-            radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, opacity: 0.8, fillOpacity: 0.8
-        }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
-        setTimeout(function() { map.invalidateSize(); }, 300);
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initDetailMap);
-    } else {
-        initDetailMap();
-    }
+    var el = document.getElementById('detail-map');
+    if (!el || typeof L === 'undefined') return;
+    var map = L.map(el).setView([{{ incidente.latitud }}, {{ incidente.longitud }}], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap', maxZoom: 19
+    }).addTo(map);
+    L.circleMarker([{{ incidente.latitud }}, {{ incidente.longitud }}], {
+        radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, opacity: 0.8, fillOpacity: 0.8
+    }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
+    setTimeout(function() { map.invalidateSize(); }, 300);
 })();
 </script>
 {% endblock %}
