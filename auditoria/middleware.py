@@ -1,4 +1,12 @@
 import threading
+import logging
+import sys
+import traceback
+
+from django.http import JsonResponse, HttpResponseServerError
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 _thread_locals = threading.local()
 
@@ -47,3 +55,25 @@ class CSPMiddleware:
             "form-action 'self'"
         )
         return response
+
+
+class ErrorBoundaryMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        try:
+            return self.get_response(request)
+        except Exception as e:
+            logger.error(
+                "Unhandled exception on %s %s: %s\n%s",
+                request.method,
+                request.path,
+                e,
+                traceback.format_exc(),
+            )
+            if settings.DEBUG:
+                raise
+            return HttpResponseServerError(
+                "<h1>Error interno del servidor</h1><p>El servicio ha sido notificado. Intenta de nuevo mas tarde.</p>"
+            )
