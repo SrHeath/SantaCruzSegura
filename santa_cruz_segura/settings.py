@@ -37,8 +37,8 @@ INSTALLED_APPS = [
 
     'crispy_forms',
     'crispy_bootstrap5',
-    'cloudinary',
     'cloudinary_storage',
+    'cloudinary',
     'usuarios',
     'incidentes',
     'auditoria',
