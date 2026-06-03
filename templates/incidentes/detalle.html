@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load l10n %}
 
 {% block content %}
 <div class="row">
@@ -55,10 +56,12 @@
             {% if incidente.latitud and incidente.longitud %}
             <div class="mb-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 bg-light rounded-3 border">
-                    <span class="text-muted"><i class="bi bi-geo-alt-fill"></i> Coordenadas: {{ incidente.latitud|unlocalize }}, {{ incidente.longitud|unlocalize }}</span>
-                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud|unlocalize }}&lng={{ incidente.longitud|unlocalize }}&id={{ incidente.pk }}" class="btn btn-primary">
+                    {% localize off %}
+                    <span class="text-muted"><i class="bi bi-geo-alt-fill"></i> Coordenadas: {{ incidente.latitud }}, {{ incidente.longitud }}</span>
+                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-primary">
                         <i class="bi bi-map-fill"></i> Ver en Mapa
                     </a>
+                    {% endlocalize %}
                 </div>
             </div>
             {% endif %}
@@ -102,9 +105,11 @@
             <div class="d-flex justify-content-between mt-4">
                 <a href="{% url 'incidente_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver a la Lista</a>
                 {% if incidente.latitud and incidente.longitud %}
-                <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud|unlocalize }}&lng={{ incidente.longitud|unlocalize }}&id={{ incidente.pk }}" class="btn btn-primary">
+                {% localize off %}
+                <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-primary">
                     <i class="bi bi-map-fill"></i> Ver en Mapa
                 </a>
+                {% endlocalize %}
                 {% endif %}
             </div>
         </div>
