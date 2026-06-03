@@ -1,9 +1,8 @@
 import threading
 import logging
-import sys
 import traceback
 
-from django.http import JsonResponse, HttpResponseServerError
+from django.http import HttpResponse
 from django.conf import settings
 
 logger = logging.getLogger(__name__)
@@ -74,6 +73,7 @@ class ErrorBoundaryMiddleware:
             )
             if settings.DEBUG:
                 raise
-            return HttpResponseServerError(
-                "<h1>Error interno del servidor</h1><p>El servicio ha sido notificado. Intenta de nuevo mas tarde.</p>"
+            return HttpResponse(
+                "<h1>Error interno del servidor</h1><p>El servicio ha sido notificado. Intenta de nuevo mas tarde.</p>",
+                status=500,
             )
