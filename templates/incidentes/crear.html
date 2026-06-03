@@ -2,13 +2,17 @@
 {% load static %}
 {% load crispy_forms_tags %}
 
+{% block head_extra %}
+<link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-12">
         <h2 class="text-primary fw-bold mb-1">
             <i class="bi bi-exclamation-triangle-fill text-danger"></i> Reportar Incidente
         </h2>
-        <p class="text-muted">Registra un siniestro de seguridad en la ciudad. Tu ubicación es capturada por GPS automáticamente o puedes ajustarla manualmente arrastrando el marcador.</p>
+        <p class="text-muted">Registra un siniestro de seguridad en la ciudad. Arrastra el marcador o haz clic en el mapa para fijar la ubicación.</p>
     </div>
 </div>
 
@@ -17,13 +21,12 @@
         <div class="card border-0 shadow-sm h-100 p-3">
             <div id="gps-status" class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
                 <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
-                <span>📍 Obteniendo ubicación GPS de tu dispositivo...</span>
+                <span>📍 Obteniendo ubicación GPS...</span>
             </div>
-
             <label class="form-label fw-bold text-secondary mb-2">
-                <i class="bi bi-map-fill"></i> Ubicación del Suceso (Haz clic o arrastra el marcador):
+                <i class="bi bi-map-fill"></i> Ubicación (Haz clic o arrastra el marcador):
             </label>
-            <div id="map-picker" class="rounded-3 border" style="height: 420px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);"></div>
+            <div id="map-picker" class="rounded-3 border" style="height: 420px;"></div>
         </div>
     </div>
 
@@ -41,12 +44,72 @@
 </div>
 {% endblock %}
 
-{% block head_extra %}
-<link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
-{% endblock %}
-
 {% block scripts %}
 {{ block.super }}
 <script src="{% static 'js/leaflet.js' %}"></script>
-<script src="{% static 'js/mapa_crear.js' %}"></script>
+<script>
+(function() {
+    var latInput = document.getElementById('id_latitud');
+    var lngInput = document.getElementById('id_longitud');
+    var submitBtn = document.getElementById('submit-btn');
+    var gpsStatus = document.getElementById('gps-status');
+    var defaultLat = -17.7833, defaultLng = -63.1821;
+
+    function updateCoords(lat, lng, source) {
+        if (latInput) latInput.value = lat.toFixed(7);
+        if (lngInput) lngInput.value = lng.toFixed(7);
+        if (submitBtn) submitBtn.disabled = false;
+        if (gpsStatus) {
+            gpsStatus.className = 'alert alert-success d-flex align-items-center gap-2 mb-3';
+            gpsStatus.innerHTML = '<span><i class="bi bi-check-circle-fill"></i> Ubicación fijada por <strong>' + source + '</strong>: ' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</span>';
+        }
+    }
+
+    updateCoords(defaultLat, defaultLng, 'defecto (Santa Cruz)');
+
+    if (typeof L === 'undefined') {
+        if (gpsStatus) {
+            gpsStatus.className = 'alert alert-danger d-flex align-items-center gap-2 mb-3';
+            gpsStatus.innerHTML = '<span><i class="bi bi-exclamation-triangle-fill"></i> Error al cargar el mapa. Ingresa las coordenadas manualmente.</span>';
+        }
+        if (latInput) latInput.setAttribute('type', 'text');
+        if (lngInput) lngInput.setAttribute('type', 'text');
+    } else {
+        var map = L.map('map-picker').setView([defaultLat, defaultLng], 13);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '© Google', maxZoom: 20
+        }).addTo(map);
+
+        var marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+        marker.on('dragend', function() {
+            var pos = marker.getLatLng();
+            updateCoords(pos.lat, pos.lng, 'marcador manual');
+        });
+
+        map.on('click', function(e) {
+            marker.setLatLng(e.latlng);
+            updateCoords(e.latlng.lat, e.latlng.lng, 'clic en mapa');
+        });
+
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    var lat = pos.coords.latitude, lng = pos.coords.longitude;
+                    marker.setLatLng([lat, lng]);
+                    map.setView([lat, lng], 16);
+                    updateCoords(lat, lng, 'GPS');
+                },
+                function() {
+                    if (gpsStatus) {
+                        gpsStatus.className = 'alert alert-info d-flex align-items-center gap-2 mb-3';
+                        gpsStatus.innerHTML = '<span><i class="bi bi-info-circle-fill"></i> Sin señal GPS. Arrastra el marcador o haz clic en el mapa.</span>';
+                    }
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        }
+    }
+})();
+</script>
 {% endblock %}

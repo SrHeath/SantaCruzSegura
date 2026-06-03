@@ -3,41 +3,65 @@
 
 {% block head_extra %}
 <link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
+<style>
+  #map { height: 650px; }
+  @media (max-width: 768px) { #map { height: 400px; } }
+</style>
 {% endblock %}
 
 {% block content %}
 <div class="row mb-4">
     <div class="col-md-12">
-        <h2 class="text-primary fw-bold mb-1">
-            <i class="bi bi-map-fill"></i> Mapa de Incidentes y Zonas de Riesgo
-        </h2>
-        <p class="text-muted">Explora visualmente los reportes de delincuencia georreferenciados en la ciudad.</p>
+        <h2 class="text-primary fw-bold mb-1"><i class="bi bi-map-fill"></i> Mapa de Incidentes</h2>
+        <p class="text-muted">Incidentes reportados en Santa Cruz de la Sierra.</p>
     </div>
 </div>
 <div class="card border-0 shadow-sm p-2 mb-4">
-    <div id="map" class="rounded-3" style="height: 650px;"></div>
+    <div id="map" class="rounded-3"></div>
 </div>
 
-<script>
-window.__INCIDENTES__ = [
-    {% for incidente in incidentes %}
-    {
-        id: {{ incidente.id }},
-        lat: {{ incidente.latitud }},
-        lng: {{ incidente.longitud }},
-        titulo: "{{ incidente.titulo|escapejs }}",
-        sector: "{{ incidente.sector.nombre|escapejs }}",
-        tipo: "{{ incidente.tipo.nombre|escapejs }}",
-        descripcion: "{{ incidente.descripcion|escapejs }}",
-        imagenUrl: "{% if incidente.imagen %}{{ incidente.imagen.url }}{% endif %}"
-    },
-    {% endfor %}
-];
-</script>
-{% endblock %}
-
-{% block scripts %}
-{{ block.super }}
 <script src="{% static 'js/leaflet.js' %}"></script>
-<script src="{% static 'js/mapa_incidentes.js' %}"></script>
+<script>
+(function() {
+    var el = document.getElementById('map');
+    if (!el || typeof L === 'undefined') return;
+
+    var map = L.map(el).setView([-17.7833, -63.1821], 12);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '© Google', maxZoom: 20
+    }).addTo(map);
+
+    var data = [
+        {% for i in incidentes %}
+        { lat: {{ i.latitud }}, lng: {{ i.longitud }}, id: {{ i.id }},
+          titulo: "{{ i.titulo|escapejs }}", tipo: "{{ i.tipo.nombre|escapejs }}",
+          sector: "{{ i.sector.nombre|escapejs }}", desc: "{{ i.descripcion|escapejs }}",
+          img: "{% if i.imagen %}{{ i.imagen.url }}{% endif %}" },
+        {% endfor %}
+    ];
+
+    data.forEach(function(i) {
+        var color = i.tipo.indexOf('Robo') !== -1 ? '#dc3545' :
+                    i.tipo.indexOf('Asalto') !== -1 ? '#fd7e14' : '#0d6efd';
+        L.circleMarker([i.lat, i.lng], {
+            radius: 8, fillColor: color, color: '#000', weight: 1, fillOpacity: 0.7
+        }).addTo(map).bindPopup(
+            '<div style="max-width:250px">' +
+            '<h6 class="text-primary"><strong>' + i.titulo + '</strong></h6>' +
+            '<p class="mb-1 small"><strong>Tipo:</strong> ' + i.tipo + '</p>' +
+            '<p class="mb-1 small"><strong>Sector:</strong> ' + i.sector + '</p>' +
+            '<p class="small">' + i.desc + '</p>' +
+            (i.img ? '<img src="' + i.img + '" class="img-fluid rounded border" style="max-height:120px">' : '') +
+            '</div>', { maxWidth: 300 }
+        );
+    });
+
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('lat') && urlParams.get('lng')) {
+        map.setView([parseFloat(urlParams.get('lat')), parseFloat(urlParams.get('lng'))], 17);
+    }
+
+    setTimeout(function() { map.invalidateSize(); }, 300);
+})();
+</script>
 {% endblock %}
