@@ -26,6 +26,7 @@
                     <th>Barrio / Sector</th>
                     <th>Estado de Cuenta</th>
                     <th class="text-center">Reportes Falsos</th>
+                    <th class="text-center">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -73,10 +74,17 @@
                                 {{ usuario.reportes_falsos_mes }}/10
                             </span>
                         </td>
+                        <td class="text-center">
+                            {% if user.rol.nombre == 'Superadministrador' or user.rol.nombre == 'Administrador de Junta' %}
+                            <a href="{% url 'usuario_rol' usuario.pk %}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-person-gear"></i>
+                            </a>
+                            {% endif %}
+                        </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="7" class="text-center py-4 text-muted">
+                        <td colspan="8" class="text-center py-4 text-muted">
                             <i class="bi bi-inbox fs-2"></i>
                             <p class="mb-0 mt-2">No hay usuarios registrados en el sistema.</p>
                         </td>

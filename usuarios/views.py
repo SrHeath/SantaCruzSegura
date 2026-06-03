@@ -123,3 +123,39 @@ class PerfilView(LoginRequiredMixin, UpdateView):
 
     def get_object(self):
         return self.request.user
+
+
+class UsuarioRolUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Usuario
+    fields = ['rol', 'estado', 'barrio']
+    template_name = 'usuarios/cambiar_rol.html'
+    success_url = reverse_lazy('usuario_lista')
+
+    def test_func(self):
+        if not self.request.user.is_authenticated:
+            return False
+        user = self.request.user
+        rol = getattr(user, 'rol', None)
+        if not rol:
+            return False
+        if rol.nombre == 'Superadministrador':
+            return True
+        if rol.nombre == 'Administrador de Junta':
+            target = self.get_object()
+            return user.barrio and target.barrio == user.barrio
+        return False
+
+    def form_valid(self, form):
+        old_rol = getattr(self.object.rol, 'nombre', 'Sin rol')
+        response = super().form_valid(form)
+        new_rol = getattr(self.object.rol, 'nombre', 'Sin rol')
+        AuditLog.objects.create(
+            usuario=self.request.user,
+            accion='Cambio de rol',
+            modelo='Usuario',
+            registro_id=self.object.pk,
+            detalles=f'Rol cambiado de "{old_rol}" a "{new_rol}", Estado: {self.object.estado}',
+            ip_origen=get_client_ip(self.request),
+        )
+        messages.success(self.request, f'Rol de {self.object.username} actualizado.')
+        return response

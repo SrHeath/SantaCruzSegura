@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 mx-auto">
+        <div class="card border-0 shadow-sm p-4">
+            <div class="d-flex align-items-center gap-3 mb-4">
+                <div class="d-inline-flex p-3 rounded-circle bg-secondary bg-opacity-10 text-secondary fs-4">
+                    <i class="bi bi-person-gear"></i>
+                </div>
+                <div>
+                    <h4 class="fw-bold mb-0 text-dark">Cambiar Rol de Usuario</h4>
+                    <p class="text-muted mb-0 small">{{ object.get_full_name|default:object.username }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="bg-light rounded-3 p-3 mb-4">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <span class="text-muted small">Usuario</span>
+                        <p class="mb-0 fw-semibold">{{ object.username }}</p>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Email</span>
+                        <p class="mb-0 fw-semibold">{{ object.email|default:"Sin email" }}</p>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Rol Actual</span>
+                        <p class="mb-0">
+                            <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-25">
+                                {{ object.rol.nombre|default:"Vecino" }}
+                            </span>
+                        </p>
+                    </div>
+                    <div class="col-6">
+                        <span class="text-muted small">Estado</span>
+                        <p class="mb-0">
+                            <span class="badge {% if object.estado == 'activo' %}bg-success{% elif object.estado == 'bloqueado' %}bg-warning{% else %}bg-danger{% endif %} bg-opacity-10 text-{% if object.estado == 'activo' %}success{% elif object.estado == 'bloqueado' %}warning-emphasis{% else %}danger{% endif %} border">
+                                {{ object.get_estado_display }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form|crispy }}
+
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'usuario_lista' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Cancelar
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
