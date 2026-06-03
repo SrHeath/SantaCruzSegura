@@ -1,10 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block head_extra %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css">
-{% endblock %}
-
 {% block content %}
 <div class="row">
     <div class="col-md-9 mx-auto">
@@ -21,16 +17,15 @@
                     {% endif %}
                 </div>
             </div>
-
             <hr>
 
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded-3 border h-100">
-                        <p><span class="text-muted small">TÍTULO</span><br><strong>{{ incidente.titulo }}</strong></p>
+                        <p><span class="text-muted small">TITULO</span><br><strong>{{ incidente.titulo }}</strong></p>
                         <p><span class="text-muted small">TIPO</span><br><span class="badge bg-secondary">{{ incidente.tipo.nombre }}</span></p>
                         <p><span class="text-muted small">SECTOR</span><br><i class="bi bi-geo-alt-fill text-muted"></i> {{ incidente.sector.nombre }}</p>
-                        <p><span class="text-muted small">DIRECCIÓN</span><br>{{ incidente.direccion }}</p>
+                        <p><span class="text-muted small">DIRECCION</span><br>{{ incidente.direccion }}</p>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -39,10 +34,10 @@
                         <p><span class="text-muted small">REPORTADO POR</span><br>
                             {% if incidente.reporte_anonimo %}
                                 {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
-                                    Anónimo ({{ incidente.reporte_por.username }})
-                                {% else %}Anónimo{% endif %}
+                                    Anonimo ({{ incidente.reporte_por.username }})
+                                {% else %}Anonimo{% endif %}
                             {% else %}
-                                {% if incidente.reporte_por %}{{ incidente.reporte_por.username }}{% else %}Anónimo{% endif %}
+                                {% if incidente.reporte_por %}{{ incidente.reporte_por.username }}{% else %}Anonimo{% endif %}
                             {% endif %}
                         </p>
                         {% if incidente.validador %}
@@ -53,19 +48,17 @@
             </div>
 
             <div class="mb-4">
-                <h5><i class="bi bi-file-text"></i> Descripción</h5>
+                <h5><i class="bi bi-file-text"></i> Descripcion</h5>
                 <div class="p-3 bg-light rounded-3 border" style="white-space: pre-line;">{{ incidente.descripcion }}</div>
             </div>
 
             {% if incidente.latitud and incidente.longitud %}
             <div class="mb-4">
-                <h5><i class="bi bi-geo-alt"></i> Ubicación</h5>
-                <div class="bg-light p-2 rounded-3 border">
-                    <div id="detail-map" style="height: 300px;"></div>
-                </div>
-                <div class="mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <small class="text-muted">Coordenadas: {{ incidente.latitud|floatformat:-7 }}, {{ incidente.longitud|floatformat:-7 }}</small>
-                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud|floatformat:-7 }}&lng={{ incidente.longitud|floatformat:-7 }}&id={{ incidente.pk }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-map"></i> Ver en mapa completo</a>
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 p-3 bg-light rounded-3 border">
+                    <span class="text-muted"><i class="bi bi-geo-alt-fill"></i> Coordenadas: {{ incidente.latitud|floatformat:-7 }}, {{ incidente.longitud|floatformat:-7 }}</span>
+                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud|floatformat:-7 }}&lng={{ incidente.longitud|floatformat:-7 }}&id={{ incidente.pk }}" class="btn btn-primary">
+                        <i class="bi bi-map-fill"></i> Ver en Mapa
+                    </a>
                 </div>
             </div>
             {% endif %}
@@ -88,7 +81,7 @@
                 <div class="d-flex justify-content-between mb-2">
                     <span class="fw-bold text-primary">
                         {% if testigo.reporte_anonimo %}
-                            Anónimo{% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %} ({{ testigo.usuario.username }}){% endif %}
+                            Anonimo{% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %} ({{ testigo.usuario.username }}){% endif %}
                         {% else %}
                             {{ testigo.usuario.username }}
                         {% endif %}
@@ -107,28 +100,14 @@
             {% endfor %}
 
             <div class="d-flex justify-content-between mt-4">
-                <a href="{% url 'incidente_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
-                <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud|floatformat:-7 }}&lng={{ incidente.longitud|floatformat:-7 }}&id={{ incidente.pk }}" class="btn btn-primary"><i class="bi bi-geo-alt-fill"></i> Ver en Mapa</a>
+                <a href="{% url 'incidente_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver a la Lista</a>
+                {% if incidente.latitud and incidente.longitud %}
+                <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud|floatformat:-7 }}&lng={{ incidente.longitud|floatformat:-7 }}&id={{ incidente.pk }}" class="btn btn-primary">
+                    <i class="bi bi-map-fill"></i> Ver en Mapa
+                </a>
+                {% endif %}
             </div>
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
-<script>
-(function() {
-    var lat_value = {{ incidente.latitud|floatformat:-7 }};
-    var lng_value = {{ incidente.longitud|floatformat:-7 }};
-    var el = document.getElementById('detail-map');
-    if (!el || typeof L === 'undefined' || lat_value === null || lng_value === null) return;
-    var map = L.map(el).setView([lat_value, lng_value], 15);
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        attribution: '© Google', maxZoom: 20
-    }).addTo(map);
-    L.circleMarker([lat_value, lng_value], {
-        radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, fillOpacity: 0.8
-    }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
-    setTimeout(function() { map.invalidateSize(); }, 300);
-})();
-</script>
 {% endblock %}
