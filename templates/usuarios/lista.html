@@ -76,9 +76,11 @@
                         </td>
                         <td class="text-center">
                             {% if user.is_superuser or user.rol.nombre == 'Superadministrador' or user.rol.nombre == 'Administrador de Junta' %}
-                            <a href="{% url 'usuario_rol' usuario.pk %}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-person-gear"></i>
+                            <a href="{% url 'usuario_rol' usuario.pk %}" class="btn btn-sm btn-outline-primary" title="Cambiar rol">
+                                <i class="bi bi-person-gear"></i> Rol
                             </a>
+                            {% else %}
+                            <span class="text-muted small">—</span>
                             {% endif %}
                         </td>
                     </tr>
