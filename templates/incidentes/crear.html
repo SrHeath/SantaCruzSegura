@@ -42,11 +42,11 @@
 {% endblock %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 {% endblock %}
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="{% static 'js/mapa_crear.js' %}"></script>
 {% endblock %}

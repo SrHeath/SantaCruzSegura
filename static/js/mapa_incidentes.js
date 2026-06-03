@@ -1,11 +1,14 @@
 (function() {
     function initMap() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const targetLat = urlParams.get('lat');
-        const targetLng = urlParams.get('lng');
-        const targetId = urlParams.get('id');
+        var urlParams = new URLSearchParams(window.location.search);
+        var targetLat = urlParams.get('lat');
+        var targetLng = urlParams.get('lng');
+        var targetId = urlParams.get('id');
 
-        const map = L.map('map');
+        var mapDiv = document.getElementById('map');
+        if (!mapDiv || typeof L === 'undefined') return;
+
+        var map = L.map('map');
 
         if (targetLat && targetLng) {
             map.setView([parseFloat(targetLat), parseFloat(targetLng)], 17);
@@ -13,62 +16,64 @@
             map.setView([-17.7833, -63.1821], 12);
         }
 
-        const googleRoads = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-            attribution: '© Google Maps', maxZoom: 20
+        var googleRoads = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '© Google', maxZoom: 20
         });
-        const googleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-            attribution: '© Google Maps', maxZoom: 20
+        var googleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+            attribution: '© Google', maxZoom: 20
         });
-        const googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-            attribution: '© Google Maps', maxZoom: 20
+        var googleHybrid = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+            attribution: '© Google', maxZoom: 20
         });
 
         googleRoads.addTo(map);
 
-        const incidentes = window.__INCIDENTES__ || [];
+        var incidentes = window.__INCIDENTES__ || [];
 
-        if (incidentes.length > 0) {
-            const heatArray = incidentes.map(i => [i.lat, i.lng, 1]);
-            L.heatLayer(heatArray, {
-                radius: 25, blur: 15, maxZoom: 1,
-                gradient: {0.4: 'blue', 0.65: 'lime', 0.8: 'yellow', 1.0: 'red'}
-            }).addTo(map);
-        }
+        try {
+            if (incidentes.length > 0 && typeof L.heatLayer === 'function') {
+                var heatArray = incidentes.map(function(i) { return [i.lat, i.lng, 1]; });
+                L.heatLayer(heatArray, {
+                    radius: 25, blur: 15, maxZoom: 10,
+                    gradient: {0.4: 'blue', 0.65: 'lime', 0.8: 'yellow', 1.0: 'red'}
+                }).addTo(map);
+            }
+        } catch(e) {}
 
-        function getRadiusForZoom(zoom) {
-            if (zoom >= 16) return 10;
-            if (zoom >= 14) return 8;
-            if (zoom >= 12) return 6;
-            if (zoom >= 10) return 4;
-            return 2;
-        }
-
-        const markers = [];
+        var markers = [];
 
         incidentes.forEach(function(i) {
-            const tipoLower = (i.tipo || '').toLowerCase();
-            const color = tipoLower.includes('robo') ? 'red' :
-                          tipoLower.includes('asalto') ? 'orange' : 'blue';
+            var tipoLower = (i.tipo || '').toLowerCase();
+            var color = tipoLower.indexOf('robo') !== -1 ? 'red' :
+                        tipoLower.indexOf('asalto') !== -1 ? 'orange' : 'blue';
 
-            let popupContent = '<div style="max-width: 250px;">' +
+            var popupContent = '<div style="max-width:250px;">' +
                 '<h6 class="mb-1 text-primary"><strong>' + escapeHtml(i.titulo) + '</strong></h6>' +
                 '<p class="mb-1 small"><strong>Tipo:</strong> ' + escapeHtml(i.tipo) + '</p>' +
                 '<p class="mb-1 small"><strong>Sector:</strong> ' + escapeHtml(i.sector) + '</p>' +
-                '<p class="mb-2 small text-dark" style="white-space: pre-line;">' + escapeHtml(i.descripcion) + '</p>';
+                '<p class="mb-2 small text-dark">' + escapeHtml(i.descripcion) + '</p>';
 
             if (i.imagenUrl) {
-                popupContent += '<div class="mt-2 text-center"><img src="' + escapeHtml(i.imagenUrl) + '" class="img-fluid rounded border" style="max-height: 120px; object-fit: cover; width: 100%;" alt="Evidencia" loading="lazy"></div>';
+                popupContent += '<div class="mt-2 text-center"><img src="' + escapeHtml(i.imagenUrl) + '" class="img-fluid rounded border" style="max-height:120px;object-fit:cover;width:100%;" alt="Evidencia" loading="lazy"></div>';
             }
 
             popupContent += '</div>';
 
-            const marker = L.circleMarker([i.lat, i.lng], {
+            function getRadiusForZoom(z) {
+                if (z >= 16) return 10;
+                if (z >= 14) return 8;
+                if (z >= 12) return 6;
+                if (z >= 10) return 4;
+                return 2;
+            }
+
+            var marker = L.circleMarker([i.lat, i.lng], {
                 radius: getRadiusForZoom(map.getZoom()),
                 fillColor: color, color: '#000', weight: 1,
                 opacity: 0.7, fillOpacity: 0.7
             }).addTo(map).bindPopup(popupContent, {maxWidth: 300});
 
-            if (targetId && i.id == targetId) {
+            if (targetId && String(i.id) === targetId) {
                 setTimeout(function() { marker.openPopup(); }, 500);
             }
 
@@ -76,8 +81,8 @@
         });
 
         map.on('zoomend', function() {
-            const currentZoom = map.getZoom();
-            const newRadius = getRadiusForZoom(currentZoom);
+            var z = map.getZoom();
+            var newRadius = z >= 16 ? 10 : z >= 14 ? 8 : z >= 12 ? 6 : z >= 10 ? 4 : 2;
             markers.forEach(function(m) { m.setRadius(newRadius); });
         });
 
@@ -88,8 +93,8 @@
         }).addTo(map);
 
         L.control({position: 'bottomright'}).onAdd = function() {
-            const div = L.DomUtil.create('div', 'info legend');
-            div.innerHTML = '<div class="card p-3 border-0 shadow-sm" style="background: rgba(255,255,255,0.9); backdrop-filter: blur(4px);">' +
+            var div = L.DomUtil.create('div', 'info legend');
+            div.innerHTML = '<div class="card p-3 border-0 shadow-sm" style="background:rgba(255,255,255,0.9);backdrop-filter:blur(4px);">' +
                 '<h6 class="fw-bold mb-2 text-dark"><i class="bi bi-info-circle"></i> Leyenda</h6>' +
                 '<div class="d-flex flex-column gap-1 small">' +
                 '<div><span class="text-danger">●</span> Robo</div>' +
@@ -97,6 +102,8 @@
                 '<div><span class="text-primary">●</span> Otro</div></div></div>';
             return div;
         }.addTo(map);
+
+        setTimeout(function() { map.invalidateSize(); }, 300);
     }
 
     function escapeHtml(str) {

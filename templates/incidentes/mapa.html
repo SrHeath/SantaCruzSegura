@@ -2,8 +2,7 @@
 {% load static %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet.heat/dist/leaflet-heat.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 {% endblock %}
 
 {% block content %}
@@ -39,7 +38,6 @@ window.__INCIDENTES__ = [
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="{% static 'js/mapa_incidentes.js' %}"></script>
 {% endblock %}

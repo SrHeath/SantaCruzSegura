@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 {% endblock %}
 
 {% block content %}
@@ -187,19 +187,27 @@
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    var mapEl = document.getElementById('detail-map');
-    if (!mapEl) return;
-    var map = L.map(mapEl).setView([{{ incidente.latitud }}, {{ incidente.longitud }}], 15);
-    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        attribution: '© Google Maps', maxZoom: 20
-    }).addTo(map);
-    L.circleMarker([{{ incidente.latitud }}, {{ incidente.longitud }}], {
-        radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, opacity: 0.8, fillOpacity: 0.8
-    }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
-    setTimeout(function() { map.invalidateSize(); }, 200);
-});
+(function() {
+    function initDetailMap() {
+        var el = document.getElementById('detail-map');
+        if (!el) return;
+        if (typeof L === 'undefined') return;
+        var map = L.map(el).setView([{{ incidente.latitud }}, {{ incidente.longitud }}], 15);
+        L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+            attribution: '© Google', maxZoom: 20
+        }).addTo(map);
+        L.circleMarker([{{ incidente.latitud }}, {{ incidente.longitud }}], {
+            radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, opacity: 0.8, fillOpacity: 0.8
+        }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
+        setTimeout(function() { map.invalidateSize(); }, 300);
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initDetailMap);
+    } else {
+        initDetailMap();
+    }
+})();
 </script>
 {% endblock %}
