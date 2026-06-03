@@ -32,10 +32,23 @@
     }).addTo(map);
 
     var u = new URLSearchParams(window.location.search);
-    var targetLat = u.get('lat'), targetLng = u.get('lng');
+    var targetLat = u.get('lat'), targetLng = u.get('lng'), targetId = u.get('id');
+    console.log('URL params - lat:', targetLat, 'lng:', targetLng, 'id:', targetId);
 
-    if (targetLat && targetLng)
-        map.setView([parseFloat(targetLat), parseFloat(targetLng)], 17);
+    function enSantaCruz(lat, lng) {
+        return lat > -18.0 && lat < -17.6 && lng > -63.4 && lng < -62.9;
+    }
+
+    if (targetLat && targetLng) {
+        var fLat = parseFloat(targetLat);
+        var fLng = parseFloat(targetLng);
+        if (!isNaN(fLat) && !isNaN(fLng) && enSantaCruz(fLat, fLng)) {
+            map.setView([fLat, fLng], 17);
+            console.log('Centrando en:', fLat, fLng);
+        } else {
+            console.log('Coordenadas descartadas (fuera de Santa Cruz o invalidas):', fLat, fLng);
+        }
+    }
 
     fetch('/incidentes/api/mapa/')
         .then(function(r) { return r.json(); })
