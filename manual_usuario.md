@@ -408,24 +408,300 @@ Ambos modos recuerdan tu preferencia (localStorage) y se mantienen entre página
 
 ## 11. SEGURIDAD DEL SISTEMA
 
-### ¿Qué protecciones tiene el sistema?
+El sistema implementa **defensa en profundidad** con más de 92 medidas de seguridad distribuidas en 7 capas. A continuación se detalla cada una.
 
-| Protección | ¿Qué evita? |
+---
+
+### 11.1 Seguridad en Autenticación
+
+#### Rate Limiting en Login (Anti Fuerza Bruta)
+
+| Mecanismo | Detalle |
+|-----------|---------|
+| **Límite por IP** | Máximo 10 intentos fallidos cada 15 minutos desde la misma dirección IP |
+| **Bloqueo de cuenta** | Después de 5 intentos fallidos contra la misma cuenta, se bloquea automáticamente (`is_active=False`) |
+| **Reinicio al éxito** | Si el usuario acierta, el contador de intentos fallidos se reinicia a 0 |
+| **Sin fuga de información** | El mensaje de error no revela si el usuario existe o no, evitando enumeración de cuentas |
+| **Respuesta HTTP 429** | Cuando se excede el límite, el servidor responde con código 429 y el header `Retry-After: 900` |
+
+```python
+# usuarios/views.py — Líneas 17-39
+MAX_LOGIN_ATTEMPTS_IP = 10          # Intentos máximos por IP
+LOGIN_BLOCK_MINUTES = 15            # Minutos de bloqueo
+
+# usuarios/signals.py — Líneas 33-71
+# Si intentos_fallidos >= 5 → user.estado = 'bloqueado'
+# user.is_active = (user.estado == 'activo')  # En el save()
+```
+
+#### Hashing de Contraseñas (Argon2)
+
+| Característica | Detalle |
+|----------------|---------|
+| **Algoritmo primario** | Argon2 — el más seguro actualmente, resistente a ataques con GPU, ASIC y side-channel |
+| **Algoritmo de respaldo** | PBKDF2 — para cuentas migradas |
+| **Memoria requerida** | Argon2 consume gran cantidad de RAM, haciendo inviable el cracking masivo |
+
+#### Validación de Contraseñas
+
+| Validador | Descripción |
 |-----------|-------------|
-| **Rate limiting en login** | Que un atacante pruebe miles de contraseñas |
-| **Bloqueo de cuenta** | Que prueben contraseñas contra tu cuenta específica |
-| **Rate limiting en registro** | Que se creen cuentas falsas masivamente |
-| **Rate limiting en incidentes** | Que se spameen reportes falsos |
-| **Detección de duplicados** | Que se reporte lo mismo muchas veces |
-| **Validación de imágenes** | Que se suban virus disfrazados de fotos |
-| **CSP (Content Security Policy)** | Que se inyecte código malicioso (XSS) |
-| **HSTS** | Que te redirijan a un sitio falso (SSL stripping) |
-| **Cookies seguras** | Que te roben la sesión |
-| **CSRF protection** | Que otro sitio web haga acciones en tu nombre |
-| **Clickjacking protection** | Que el sitio se ponga en un iframe oculto |
-| **Error genérico en fallos** | Que se muestre información sensible si algo falla |
-| **Path traversal protection** | Que accedan a archivos del servidor |
-| **Cloudinary** | Que tus fotos de evidencia se pierdan en cada actualización |
+| **UserAttributeSimilarity** | La contraseña no puede ser similar al username o email |
+| **MinimumLength** | Mínimo 8 caracteres |
+| **CommonPassword** | Rechaza contraseñas comunes (ej: "12345678", "password") |
+| **NumericPassword** | Rechaza contraseñas solo numéricas |
+
+---
+
+### 11.2 Seguridad en Registro
+
+| Mecanismo | Detalle |
+|-----------|---------|
+| **Rate limiting** | Máximo 3 registros por hora desde la misma IP. Respuesta HTTP 429 con `Retry-After: 3600` |
+| **Toggle de cierre** | Variable `DJANGO_REGISTRATION_OPEN` permite deshabilitar el registro público en cualquier momento sin cambiar código |
+| **Redirección** | Usuarios autenticados son redirigidos al dashboard, no pueden volver a registrarse |
+
+---
+
+### 11.3 Seguridad de Sesiones y Cookies
+
+| Protección | Valor | Efecto |
+|-----------|-------|--------|
+| **SESSION_COOKIE_HTTPONLY** | `True` | La cookie de sesión no es accesible desde JavaScript — evita robo por XSS |
+| **SESSION_COOKIE_SECURE** | `True` (producción) | La cookie solo se envía por HTTPS — evita sniffing en redes WiFi públicas |
+| **SESSION_COOKIE_SAMESITE** | `Lax` | La cookie no se envía en peticiones cross-site — evita CSRF |
+| **SESSION_EXPIRE_AT_BROWSER_CLOSE** | `True` | La sesión expira al cerrar el navegador |
+| **SESSION_COOKIE_AGE** | `86400` (24 horas) | Tiempo máximo de sesión activa |
+| **CSRF_COOKIE_HTTPONLY** | `True` | El token CSRF no es accesible desde JS |
+| **CSRF_COOKIE_SAMESITE** | `Lax` | Previene envío de token CSRF desde sitios externos |
+| **CSRF_COOKIE_SECURE** | `True` (producción) | Token solo por HTTPS |
+
+---
+
+### 11.4 Seguridad de Red y Transporte
+
+#### HSTS (HTTP Strict Transport Security)
+
+```python
+# settings.py — Líneas 205-207
+SECURE_HSTS_SECONDS = 31536000         # 1 año — el navegador recuerda usar HTTPS
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Aplica a todos los subdominios
+SECURE_HSTS_PRELOAD = True             # Incluido en listas de pre-carga de navegadores
+```
+
+| Protección | Efecto |
+|-----------|--------|
+| **HSTS** | Impide ataques SSL stripping — el navegador rechaza HTTP automáticamente |
+| **SSL Redirect** | `SECURE_SSL_REDIRECT = True` redirige todo HTTP → HTTPS |
+| **Proxy SSL** | `SECURE_PROXY_SSL_HEADER` reconoce la terminación SSL de Railway |
+
+#### Referrer Policy
+
+```python
+SECURE_REFERRER_POLICY = 'same-origin'
+```
+
+El navegador **NO envía** el header `Referer` a sitios externos. Si el docente mira las peticiones de red, no verá desde qué URL interna viniste.
+
+---
+
+### 11.5 Seguridad de Aplicación Web
+
+#### Content Security Policy (CSP)
+
+El CSP es un **firewall dentro del navegador** que bloquea recursos no autorizados. Es la defensa más efectiva contra XSS.
+
+```
+default-src 'self'              → Todo carga del mismo dominio por defecto
+script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net
+                                → Scripts solo del mismo origen + CDN autorizado
+style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com
+                                → Estilos solo del mismo origen + Google Fonts + CDN
+font-src 'self' cdn.jsdelivr.net fonts.gstatic.com fonts.googleapis.com
+                                → Fuentes solo de orígenes confiables
+img-src 'self' data: mt1.google.com res.cloudinary.com cdn.jsdelivr.net
+                                → Imágenes: locales + Google Maps tiles + Cloudinary + CDN
+connect-src 'self'              → AJAX/Fetch solo al mismo dominio
+frame-src 'none'                → Nadie puede embeber esta página en un iframe
+base-uri 'self'                 → Previene inyección de <base> tag
+form-action 'self'              → Formularios solo se envían al mismo dominio
+```
+
+**¿Qué pasaría si el docente inyecta `<script src="https://malicioso.com/virus.js">`?**
+→ El navegador lo **bloquea** porque `malicioso.com` no está en `script-src`.
+
+#### Protección contra Ataques Web Comunes
+
+| Ataque | Protección | Implementación |
+|--------|-----------|----------------|
+| **XSS (Cross-Site Scripting)** | Template auto-escaping (Django) + CSP + X-XSS-Protection + X-Content-Type-Options | `SECURE_BROWSER_XSS_FILTER=True`, `SECURE_CONTENT_TYPE_NOSNIFF=True` |
+| **CSRF (Cross-Site Request Forgery)** | Token CSRF en todos los formularios + cookies SameSite | `CsrfViewMiddleware` + `CSRF_COOKIE_SAMESITE='Lax'` |
+| **Clickjacking** | No se puede embeber en iframe | `X_FRAME_OPTIONS='DENY'` + CSP `frame-src 'none'` |
+| **MIME Confusion** | El navegador no adivina el tipo de contenido | `X-Content-Type-Options: nosniff` |
+| **Base Tag Injection** | No se puede cambiar la URL base | CSP `base-uri 'self'` |
+
+---
+
+### 11.6 Seguridad de Datos (Backend)
+
+#### Protección contra SQL Injection
+
+| Mecanismo | Detalle |
+|-----------|---------|
+| **Django ORM** | **Todo** el código usa el ORM de Django — cero consultas SQL en crudo en producción |
+| **Parameterización** | `filter()`, `get()`, `create()`, `save()` parametrizan automáticamente |
+| **Charset utf8mb4** | Previene ataques basados en colación de caracteres |
+
+#### Protección contra Path Traversal
+
+```python
+# santa_cruz_segura/urls.py — vista media_serve
+def media_serve(request, path):
+    file_path = os.path.normpath(os.path.join(settings.MEDIA_ROOT, path))
+    media_root = os.path.normpath(str(settings.MEDIA_ROOT))
+    if not os.path.exists(file_path) or not file_path.startswith(media_root + os.sep):
+        raise Http404  # Bloquea acceso fuera de MEDIA_ROOT
+```
+
+Si alguien intenta `/media/../../etc/passwd`, `normpath` resuelve la ruta y `startswith` detecta que está fuera de `MEDIA_ROOT` → **HTTP 404**.
+
+---
+
+### 11.7 Seguridad en Subida de Archivos
+
+| Protección | Implementación | Detalle |
+|-----------|----------------|---------|
+| **Validación de tipo real** | `PIL.Image.open().verify()` | Verifica los bytes del archivo — no solo la extensión. Un `.exe` renombrado a `.jpg` es rechazado |
+| **Tipos permitidos** | `image/jpeg`, `image/png`, `image/webp` | Solo formatos de imagen seguros |
+| **Límite de tamaño por archivo** | 5 MB | `MAX_UPLOAD_SIZE = 5 * 1024 * 1024` |
+| **Límite de tamaño por request** | 10 MB | `DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760` |
+| **Límite de archivos por request** | 5 archivos | `DATA_UPLOAD_MAX_NUMBER_FILES = 5` |
+| **Límite de campos por request** | 200 | `DATA_UPLOAD_MAX_NUMBER_FIELDS = 200` (previene HashDoS) |
+| **Almacenamiento externo** | Cloudinary | Las imágenes no se guardan en el servidor, evitando riesgo de ejecución remota |
+| **CSP img-src** | `res.cloudinary.com` | Solo se permite cargar imágenes desde Cloudinary (origen confiable) |
+
+---
+
+### 11.8 Protección contra Abuso y DoS
+
+#### Rate Limiting en Incidentes
+
+| Límite | Detalle |
+|--------|---------|
+| **10 reportes por hora** | Por usuario autenticado |
+| **Detección de duplicados** | Distancia Haversine < 50 metros en < 10 minutos → rechazo automático |
+| **10 reportes falsos** | Usuario inhabilitado automáticamente (`estado='inhabilitado'`) |
+
+#### Rate Limiting en Registro
+
+| Límite | Detalle |
+|--------|---------|
+| **3 registros por hora** | Desde la misma IP |
+| **Cierre de registro** | Variable `DJANGO_REGISTRATION_OPEN` permite deshabilitar completamente |
+
+#### Hardening del Servidor (Gunicorn)
+
+```
+web: gunicorn santa_cruz_segura.wsgi
+     --timeout 30          ← Workers matan requests lentos (anti Slowloris)
+     --keep-alive 2        ← Conexiones keep-alive limitadas
+     --workers 2           ← Workers controlados (evita memory exhaustion)
+     --max-requests 2000   ← Cada worker se reinicia después de 2000 requests (anti memory leaks)
+     --max-requests-jitter 200 ← Reinicio aleatorio para evitar todos a la vez
+```
+
+#### Conexión a Base de Datos
+
+```python
+CONN_MAX_AGE = 600           # 10 minutos de pooling (reutiliza conexiones)
+CONN_HEALTH_CHECKS = True    # Verifica que la conexión esté viva antes de usarla
+```
+
+---
+
+### 11.9 Manejo de Errores sin Fuga de Información
+
+```python
+# auditoria/middleware.py — ErrorBoundaryMiddleware
+class ErrorBoundaryMiddleware:
+    def __call__(self, request):
+        try:
+            return self.get_response(request)
+        except Exception as e:
+            logger.error(...)     # El error real va a logs (solo visible para devs)
+            if settings.DEBUG:
+                raise             # En desarrollo: muestra el error completo
+            return HttpResponse(
+                "<h1>Error interno del servidor</h1>",  # En producción: mensaje genérico
+                status=500
+            )
+```
+
+Si algo falla (BD caída, bug, excepción), el usuario ve **"Error interno del servidor"** sin stack traces, rutas de archivos, consultas SQL, ni contraseñas.
+
+---
+
+### 11.10 Auditoría y Trazabilidad
+
+**Todas las acciones sensibles se registran** en la tabla `AuditLog`:
+
+| Acción registrada | Quién | Cuándo | Desde qué IP |
+|-------------------|-------|-------|-------------|
+| Login exitoso | ✅ | ✅ | ✅ |
+| Login fallido | ✅ (si usuario existe) | ✅ | ✅ |
+| Intento de login con usuario inexistente | ✅ | ✅ | ✅ |
+| Registro de usuario | ✅ | ✅ | ✅ |
+| Creación de incidente | ✅ | ✅ | ✅ |
+| Cambio de rol de usuario | ✅ (admin que ejecutó) | ✅ | ✅ |
+| Validación/descarte de incidente | ✅ | ✅ | ✅ |
+| Cuenta bloqueada por intentos fallidos | ✅ | ✅ | ✅ |
+| Cuenta inhabilitada por reportes falsos | ✅ | ✅ | ✅ |
+
+---
+
+### 11.11 Gestión de Secretos
+
+| Secreto | Dónde se guarda | Protección |
+|---------|----------------|------------|
+| `SECRET_KEY` | Variable de entorno (Railway) | Nunca en código fuente |
+| `MYSQLPASSWORD` | Variable de entorno (Railway) | Nunca en código fuente |
+| `CLOUDINARY_API_KEY` | Variable de entorno (Railway) | Nunca en código fuente |
+| `CLOUDINARY_API_SECRET` | Variable de entorno (Railway) | Nunca en código fuente |
+| `.env` local | Archivo ignorado por `.gitignore` | Nunca subido a GitHub |
+
+---
+
+### 11.12 Resumen de Seguridad por Capas
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ CAPA 7: Auditoría y Trazabilidad                            │
+│ AuditLog + señales + admin.py                               │
+├─────────────────────────────────────────────────────────────┤
+│ CAPA 6: Infraestructura                                     │
+│ Gunicorn timeout/max-requests + CONN_MAX_AGE + health checks│
+├─────────────────────────────────────────────────────────────┤
+│ CAPA 5: Manejo de Errores                                   │
+│ ErrorBoundaryMiddleware (sin fuga de info en 500)           │
+├─────────────────────────────────────────────────────────────┤
+│ CAPA 4: Aplicación                                          │
+│ CSRF tokens + Argon2 hashing + CSP + X-Frame-Options +      │
+│ X-XSS-Protection + X-Content-Type-Options + Referrer-Policy │
+├─────────────────────────────────────────────────────────────┤
+│ CAPA 3: Archivos                                            │
+│ PIL.verify() + límites upload + path traversal protection   │
+│ + Cloudinary (almacenamiento externo y seguro)               │
+├─────────────────────────────────────────────────────────────┤
+│ CAPA 2: Transporte                                          │
+│ HTTPS forzado + HSTS (1 año) + SSL redirect + Secure cookies│
+├─────────────────────────────────────────────────────────────┤
+│ CAPA 1: Rate Limiting                                       │
+│ Login (10/15min por IP) + Registro (3/hora por IP) +        │
+│ Incidentes (10/hora por usuario) + Bloqueo de cuenta (5)    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
 
 ### ¿Qué hago si mi cuenta se bloqueó?
 
