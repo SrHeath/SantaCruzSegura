@@ -1,4 +1,9 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block head_extra %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+{% endblock %}
 
 {% block content %}
 <div class="row">
@@ -92,6 +97,20 @@
                 </div>
             </div>
 
+            <!-- Incident Map -->
+            <div class="mb-4">
+                <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-geo-alt"></i> Ubicacion del Suceso</h5>
+                <div class="bg-light p-2 rounded-3 border">
+                    <div id="detail-map" style="height: 300px;" class="rounded-2"></div>
+                </div>
+                <div class="mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <span class="text-muted small"><i class="bi bi-geo"></i> Coordenadas: {{ incidente.latitud }}, {{ incidente.longitud }}</span>
+                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-map"></i> Ver en mapa completo
+                    </a>
+                </div>
+            </div>
+
             <!-- Evidence Photo -->
             {% if incidente.imagen %}
                 <div class="mb-4">
@@ -105,7 +124,7 @@
                 </div>
             {% endif %}
 
-            <!-- Feed de Testimonios Adicionales (Comentarios / Comportamiento de Blog) -->
+            <!-- Feed de Testimonios Adicionales -->
             <hr class="my-4">
             <h4 class="text-secondary mb-3"><i class="bi bi-chat-dots-fill"></i> Testimonios y Aportes Adicionales ({{ incidente.testigos.count }})</h4>
             <div class="witness-feed mb-4">
@@ -164,4 +183,23 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var mapEl = document.getElementById('detail-map');
+    if (!mapEl) return;
+    var map = L.map(mapEl).setView([{{ incidente.latitud }}, {{ incidente.longitud }}], 15);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '© Google Maps', maxZoom: 20
+    }).addTo(map);
+    L.circleMarker([{{ incidente.latitud }}, {{ incidente.longitud }}], {
+        radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, opacity: 0.8, fillOpacity: 0.8
+    }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
+    setTimeout(function() { map.invalidateSize(); }, 200);
+});
+</script>
 {% endblock %}

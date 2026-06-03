@@ -97,21 +97,21 @@
             <tbody>
                 {% for incidente in incidentes %}
                     <tr>
-                        <td>
+                        <td data-label="Titulo">
                             <div class="fw-bold text-dark">{{ incidente.titulo }}</div>
                             <span class="text-muted small d-block text-truncate" style="max-width: 250px;">{{ incidente.direccion }}</span>
                         </td>
-                        <td>{{ incidente.sector.nombre }}</td>
-                        <td>
+                        <td data-label="Sector">{{ incidente.sector.nombre }}</td>
+                        <td data-label="Tipo">
                             <span class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-25">
                                 {{ incidente.tipo.nombre }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Fecha">
                             <div class="small">{{ incidente.fecha_hora|date:"d/m/Y" }}</div>
                             <div class="text-muted small">{{ incidente.fecha_hora|date:"H:i" }}</div>
                         </td>
-                        <td>
+                        <td data-label="Reportante">
                             {% if incidente.reporte_anonimo %}
                                 {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
                                     <span class="text-muted small"><i class="bi bi-eye-slash-fill"></i> Anónimo</span> <span class="text-xs text-primary">({{ incidente.reporte_por.username }})</span>
@@ -126,7 +126,7 @@
                                 {% endif %}
                             {% endif %}
                         </td>
-                        <td>
+                        <td data-label="Estado">
                             {% if incidente.estado == 'pendiente' %}
                                 <span class="badge bg-warning bg-opacity-15 text-warning-emphasis border border-warning border-opacity-25">
                                     <i class="bi bi-hourglass-split"></i> Pendiente
@@ -141,12 +141,12 @@
                                 </span>
                             {% endif %}
                         </td>
-                        <td class="text-center">
+                        <td data-label="Testigos" class="text-center">
                             <span class="badge bg-info bg-opacity-15 text-info-emphasis border border-info border-opacity-25 rounded-pill px-3">
                                 <i class="bi bi-chat-right-text-fill"></i> {{ incidente.num_testigos }}
                             </span>
                         </td>
-                        <td>
+                        <td data-label="Accion">
                             <a href="{% url 'incidente_detalle' incidente.pk %}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
                                 <i class="bi bi-info-circle"></i> Detalle
                             </a>

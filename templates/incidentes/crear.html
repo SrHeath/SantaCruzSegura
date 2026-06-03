@@ -42,12 +42,11 @@
 {% endblock %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" media="print" onload="this.media='all'">
-<noscript><link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"></noscript>
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 {% endblock %}
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js" defer></script>
-<script src="{% static 'js/mapa_crear.js' %}" defer></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="{% static 'js/mapa_crear.js' %}"></script>
 {% endblock %}
