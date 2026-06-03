@@ -50,8 +50,9 @@
                     <li class="nav-item"><a class="nav-link" href="{% url 'prediccion_lista' %}"><i class="bi bi-cpu"></i> Predicciones</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'alerta_lista' %}"><i class="bi bi-bell"></i> Alertas</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'alerta_suscripcion_config' %}"><i class="bi bi-sliders"></i> Suscripción</a></li>
-                    {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
+                    {% if user.is_superuser or user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
                         <li class="nav-item"><a class="nav-link text-warning fw-bold" href="{% url 'incidente_bandeja_validacion' %}"><i class="bi bi-shield-check"></i> Validación</a></li>
+                        <li class="nav-item"><a class="nav-link" href="{% url 'usuario_lista' %}"><i class="bi bi-people-fill"></i> Usuarios</a></li>
                     {% endif %}
                 {% endif %}
             </ul>

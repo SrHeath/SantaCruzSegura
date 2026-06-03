@@ -100,7 +100,10 @@ class UsuarioListView(LoginRequiredMixin, UserPassesTestMixin, ListView):
     def test_func(self):
         if not self.request.user.is_authenticated:
             return False
-        rol = getattr(self.request.user, 'rol', None)
+        user = self.request.user
+        if user.is_superuser:
+            return True
+        rol = getattr(user, 'rol', None)
         return rol and rol.nombre in ['Superadministrador', 'Administrador de Junta']
 
 class UsuarioCrearView(LoginRequiredMixin, UserPassesTestMixin, CreateView):
@@ -135,6 +138,8 @@ class UsuarioRolUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
         if not self.request.user.is_authenticated:
             return False
         user = self.request.user
+        if user.is_superuser:
+            return True
         rol = getattr(user, 'rol', None)
         if not rol:
             return False

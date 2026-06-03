@@ -6,7 +6,7 @@
         <h2 class="text-primary fw-bold mb-0">
             <i class="bi bi-people-fill"></i> Gestión de Usuarios
         </h2>
-        {% if user.rol.nombre == 'Superadministrador' %}
+        {% if user.is_superuser or user.rol.nombre == 'Superadministrador' %}
             <a href="{% url 'usuario_crear' %}" class="btn btn-primary d-flex align-items-center gap-1">
                 <i class="bi bi-person-plus"></i> Crear Nuevo Usuario
             </a>
@@ -75,7 +75,7 @@
                             </span>
                         </td>
                         <td class="text-center">
-                            {% if user.rol.nombre == 'Superadministrador' or user.rol.nombre == 'Administrador de Junta' %}
+                            {% if user.is_superuser or user.rol.nombre == 'Superadministrador' or user.rol.nombre == 'Administrador de Junta' %}
                             <a href="{% url 'usuario_rol' usuario.pk %}" class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-person-gear"></i>
                             </a>
