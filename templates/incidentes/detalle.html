@@ -11,187 +11,122 @@
         <div class="card border-0 shadow-lg p-4 mb-4">
             <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                 <h2 class="text-primary fw-bold mb-0"><i class="bi bi-shield-fill-info"></i> Detalle de Incidente</h2>
-                <div class="d-flex gap-2">
+                <div>
                     {% if incidente.estado == 'pendiente' %}
-                        <span class="badge bg-warning bg-opacity-15 text-warning-emphasis border border-warning border-opacity-25 fs-6 py-2 px-3">
-                            <i class="bi bi-hourglass-split"></i> Pendiente de Validación
-                        </span>
+                        <span class="badge bg-warning fs-6 py-2 px-3"><i class="bi bi-hourglass-split"></i> Pendiente</span>
                     {% elif incidente.estado == 'validado' %}
-                        <span class="badge bg-success bg-opacity-15 text-success border border-success border-opacity-25 fs-6 py-2 px-3">
-                            <i class="bi bi-shield-fill-check"></i> Validado Oficialmente
-                        </span>
+                        <span class="badge bg-success fs-6 py-2 px-3"><i class="bi bi-shield-fill-check"></i> Validado</span>
                     {% else %}
-                        <span class="badge bg-danger bg-opacity-15 text-danger border border-danger border-opacity-25 fs-6 py-2 px-3">
-                            <i class="bi bi-shield-slash-fill"></i> Descartado / Falso
-                        </span>
+                        <span class="badge bg-danger fs-6 py-2 px-3"><i class="bi bi-shield-slash-fill"></i> Descartado</span>
                     {% endif %}
                 </div>
             </div>
 
-            <hr class="mb-4 text-muted">
+            <hr>
 
             <div class="row g-4 mb-4">
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded-3 border h-100">
-                        <div class="mb-3">
-                            <span class="text-muted small d-block uppercase fw-bold">Título del Reporte</span>
-                            <span class="fs-5 fw-semibold text-dark">{{ incidente.titulo }}</span>
-                        </div>
-                        <div class="mb-3">
-                            <span class="text-muted small d-block uppercase fw-bold">Tipo de Delito</span>
-                            <span class="badge bg-secondary mt-1">{{ incidente.tipo.nombre }}</span>
-                        </div>
-                        <div class="mb-3">
-                            <span class="text-muted small d-block uppercase fw-bold">Sector (Barrio)</span>
-                            <span class="text-dark"><i class="bi bi-geo-alt-fill text-muted"></i> {{ incidente.sector.nombre }}</span>
-                        </div>
-                        <div>
-                            <span class="text-muted small d-block uppercase fw-bold">Dirección Exacta</span>
-                            <span class="text-dark">{{ incidente.direccion }}</span>
-                        </div>
+                        <p><span class="text-muted small">TÍTULO</span><br><strong>{{ incidente.titulo }}</strong></p>
+                        <p><span class="text-muted small">TIPO</span><br><span class="badge bg-secondary">{{ incidente.tipo.nombre }}</span></p>
+                        <p><span class="text-muted small">SECTOR</span><br><i class="bi bi-geo-alt-fill text-muted"></i> {{ incidente.sector.nombre }}</p>
+                        <p><span class="text-muted small">DIRECCIÓN</span><br>{{ incidente.direccion }}</p>
                     </div>
                 </div>
-
                 <div class="col-md-6">
                     <div class="p-3 bg-light rounded-3 border h-100">
-                        <div class="mb-3">
-                            <span class="text-muted small d-block uppercase fw-bold">Fecha y Hora de Reporte</span>
-                            <span class="text-dark"><i class="bi bi-calendar3 text-muted"></i> {{ incidente.fecha_hora|date:"d/m/Y H:i" }}</span>
-                        </div>
-                        <div class="mb-3">
-                            <span class="text-muted small d-block uppercase fw-bold">Reportado por</span>
-                            <span class="text-dark">
-                                {% if incidente.reporte_anonimo %}
-                                    {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
-                                        <i class="bi bi-eye-slash-fill text-muted"></i> Anónimo (Vecino: <strong>{{ incidente.reporte_por.username }}</strong>)
-                                    {% else %}
-                                        <i class="bi bi-eye-slash-fill text-muted"></i> Anónimo
-                                    {% endif %}
-                                {% else %}
-                                    {% if incidente.reporte_por %}
-                                        <i class="bi bi-person-fill text-muted"></i> {{ incidente.reporte_por.username }}
-                                    {% else %}
-                                        <i class="bi bi-eye-slash-fill text-muted"></i> Anónimo
-                                    {% endif %}
-                                {% endif %}
-                            </span>
-                        </div>
+                        <p><span class="text-muted small">FECHA</span><br><i class="bi bi-calendar3"></i> {{ incidente.fecha_hora|date:"d/m/Y H:i" }}</p>
+                        <p><span class="text-muted small">REPORTADO POR</span><br>
+                            {% if incidente.reporte_anonimo %}
+                                {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
+                                    Anónimo ({{ incidente.reporte_por.username }})
+                                {% else %}Anónimo{% endif %}
+                            {% else %}
+                                {% if incidente.reporte_por %}{{ incidente.reporte_por.username }}{% else %}Anónimo{% endif %}
+                            {% endif %}
+                        </p>
                         {% if incidente.validador %}
-                            <div>
-                                <span class="text-muted small d-block uppercase fw-bold">Validado por</span>
-                                <span class="text-success fw-semibold"><i class="bi bi-person-check-fill"></i> {{ incidente.validador.username }}</span>
-                                <span class="text-muted small d-block">el {{ incidente.fecha_hora_validacion|date:"d/m/Y H:i" }}</span>
-                            </div>
+                            <p><span class="text-muted small">VALIDADO POR</span><br><i class="bi bi-person-check-fill text-success"></i> {{ incidente.validador.username }} <small class="text-muted">el {{ incidente.fecha_hora_validacion|date:"d/m/Y H:i" }}</small></p>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
             <div class="mb-4">
-                <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-file-text"></i> Descripción de los Hechos</h5>
-                <div class="p-3 bg-light rounded-3 border text-dark" style="white-space: pre-line;">
-                    {{ incidente.descripcion }}
-                </div>
+                <h5><i class="bi bi-file-text"></i> Descripción</h5>
+                <div class="p-3 bg-light rounded-3 border" style="white-space: pre-line;">{{ incidente.descripcion }}</div>
             </div>
 
+            {% if incidente.latitud and incidente.longitud %}
             <div class="mb-4">
-                <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-geo-alt"></i> Ubicacion del Suceso</h5>
+                <h5><i class="bi bi-geo-alt"></i> Ubicación</h5>
                 <div class="bg-light p-2 rounded-3 border">
-                    <div id="detail-map" style="height: 300px;" class="rounded-2"></div>
+                    <div id="detail-map" style="height: 300px;"></div>
                 </div>
                 <div class="mt-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                    <span class="text-muted small"><i class="bi bi-geo"></i> Coordenadas: {{ incidente.latitud }}, {{ incidente.longitud }}</span>
-                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-map"></i> Ver en mapa completo
+                    <small class="text-muted">Coordenadas: {{ incidente.latitud }}, {{ incidente.longitud }}</small>
+                    <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-map"></i> Ver en mapa completo</a>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if incidente.imagen %}
+            <div class="mb-4">
+                <h5><i class="bi bi-image"></i> Evidencia</h5>
+                <div class="text-center bg-light p-3 rounded-3 border">
+                    <a href="{{ incidente.imagen.url }}" target="_blank">
+                        <img src="{{ incidente.imagen.url }}" class="img-fluid rounded shadow-sm border" style="max-height:400px;object-fit:contain;" alt="Evidencia" loading="lazy">
                     </a>
                 </div>
             </div>
-
-            {% if incidente.imagen %}
-                <div class="mb-4">
-                    <h5 class="fw-bold text-secondary mb-2"><i class="bi bi-image"></i> Evidencia Fotográfica</h5>
-                    <div class="text-center bg-light p-3 rounded-3 border">
-                        <a href="{{ incidente.imagen.url }}" target="_blank">
-                            <img src="{{ incidente.imagen.url }}" class="img-fluid rounded shadow-sm border" style="max-height: 400px; object-fit: contain;" alt="Evidencia Principal" loading="lazy">
-                        </a>
-                        <span class="text-muted small d-block mt-2">Haz clic sobre la imagen para abrir a tamaño completo</span>
-                    </div>
-                </div>
             {% endif %}
 
-            <hr class="my-4">
-            <h4 class="text-secondary mb-3"><i class="bi bi-chat-dots-fill"></i> Testimonios y Aportes Adicionales ({{ incidente.testigos.count }})</h4>
-            <div class="witness-feed mb-4">
-                {% for testigo in incidente.testigos.all %}
-                    <div class="card bg-light p-3 mb-3 border-0 rounded-3 shadow-sm" style="background-color: #f8fafc !important;">
-                        <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
-                            <span class="fw-bold text-primary d-flex align-items-center gap-1">
-                                <i class="bi bi-person-circle fs-5"></i>
-                                {% if testigo.reporte_anonimo %}
-                                    {% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %}
-                                        Anónimo (Aporte de: <strong>{% if testigo.usuario %}{{ testigo.usuario.username }}{% else %}Invitado{% endif %}</strong>)
-                                    {% else %}
-                                        Anónimo
-                                    {% endif %}
-                                {% else %}
-                                    {% if testigo.usuario %}
-                                        {{ testigo.usuario.username }}
-                                    {% else %}
-                                        Invitado
-                                    {% endif %}
-                                {% endif %}
-                            </span>
-                            <span class="text-muted small"><i class="bi bi-clock"></i> {{ testigo.fecha_reporte|date:"d/m/Y H:i" }}</span>
-                        </div>
-
-                        {% if testigo.comentario and testigo.comentario != 'None' %}
-                            <p class="mb-2 text-dark p-2 bg-white rounded border-start border-primary border-3" style="white-space: pre-line;">{{ testigo.comentario }}</p>
+            <hr>
+            <h4 class="text-secondary mb-3"><i class="bi bi-chat-dots-fill"></i> Testimonios ({{ incidente.testigos.count }})</h4>
+            {% for testigo in incidente.testigos.all %}
+            <div class="card bg-light p-3 mb-3 border-0 rounded-3 shadow-sm">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="fw-bold text-primary">
+                        {% if testigo.reporte_anonimo %}
+                            Anónimo{% if user.rol and user.rol.nombre in 'Administrador de Junta Superadministrador' %} ({{ testigo.usuario.username }}){% endif %}
+                        {% else %}
+                            {{ testigo.usuario.username }}
                         {% endif %}
-
-                        {% if testigo.imagen %}
-                            <div class="mt-2">
-                                <a href="{{ testigo.imagen.url }}" target="_blank" class="d-inline-block">
-                                    <img src="{{ testigo.imagen.url }}" class="img-fluid rounded border shadow-sm" style="max-height: 180px; object-fit: contain;" alt="Evidencia de testigo" loading="lazy">
-                                </a>
-                            </div>
-                        {% endif %}
-                    </div>
-                {% empty %}
-                    <div class="text-center p-3 bg-light rounded-3 border text-muted small">
-                        <i class="bi bi-chat-left-text fs-4 d-block mb-1"></i>
-                        No hay testimonios adicionales vinculados a este reporte todavía.
-                    </div>
-                {% endfor %}
+                    </span>
+                    <small class="text-muted">{{ testigo.fecha_reporte|date:"d/m/Y H:i" }}</small>
+                </div>
+                {% if testigo.comentario and testigo.comentario != 'None' %}
+                    <p class="p-2 bg-white rounded border-start border-primary border-3" style="white-space:pre-line;">{{ testigo.comentario }}</p>
+                {% endif %}
+                {% if testigo.imagen %}
+                    <a href="{{ testigo.imagen.url }}" target="_blank"><img src="{{ testigo.imagen.url }}" class="img-fluid rounded border shadow-sm" style="max-height:180px;object-fit:contain;" loading="lazy"></a>
+                {% endif %}
             </div>
+            {% empty %}
+            <p class="text-muted text-center">No hay testimonios adicionales.</p>
+            {% endfor %}
 
-            <div class="d-flex justify-content-between align-items-center mt-4">
-                <a href="{% url 'incidente_lista' %}" class="btn btn-outline-secondary">
-                    <i class="bi bi-arrow-left"></i> Volver a la Lista
-                </a>
-                <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-primary d-flex align-items-center gap-1">
-                    <i class="bi bi-geo-alt-fill"></i> Ver en el Mapa
-                </a>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'incidente_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+                <a href="{% url 'incidente_mapa' %}?lat={{ incidente.latitud }}&lng={{ incidente.longitud }}&id={{ incidente.pk }}" class="btn btn-primary"><i class="bi bi-geo-alt-fill"></i> Ver en Mapa</a>
             </div>
-
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-{{ block.super }}
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script>
 (function() {
     var el = document.getElementById('detail-map');
     if (!el || typeof L === 'undefined') return;
-    var map = L.map(el).setView([{{ incidente.latitud }}, {{ incidente.longitud }}], 15);
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>, &copy; CARTO', maxZoom: 20
+    var lat = parseFloat('{{ incidente.latitud }}');
+    var lng = parseFloat('{{ incidente.longitud }}');
+    if (isNaN(lat) || isNaN(lng)) return;
+    var map = L.map(el).setView([lat, lng], 15);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '© Google', maxZoom: 20
     }).addTo(map);
-    L.circleMarker([{{ incidente.latitud }}, {{ incidente.longitud }}], {
-        radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, opacity: 0.8, fillOpacity: 0.8
-    }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
+    L.marker([lat, lng]).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
     setTimeout(function() { map.invalidateSize(); }, 300);
 })();
 </script>

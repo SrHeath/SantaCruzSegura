@@ -12,19 +12,19 @@
         <h2 class="text-primary fw-bold mb-1">
             <i class="bi bi-exclamation-triangle-fill text-danger"></i> Reportar Incidente
         </h2>
-        <p class="text-muted">Registra un siniestro de seguridad en la ciudad. Arrastra el marcador o haz clic en el mapa para fijar la ubicación.</p>
+        <p class="text-muted">Arrastra el marcador o haz clic en el mapa para fijar la ubicación.</p>
     </div>
 </div>
 
 <div class="row">
     <div class="col-lg-6 mb-4">
         <div class="card border-0 shadow-sm h-100 p-3">
-            <div id="gps-status" class="alert alert-warning d-flex align-items-center gap-2 mb-3" role="alert">
-                <div class="spinner-border spinner-border-sm text-warning" role="status"></div>
+            <div id="gps-status" class="alert alert-warning d-flex align-items-center gap-2 mb-3">
+                <div class="spinner-border spinner-border-sm text-warning"></div>
                 <span>📍 Obteniendo ubicación GPS...</span>
             </div>
             <label class="form-label fw-bold text-secondary mb-2">
-                <i class="bi bi-map-fill"></i> Ubicación (Haz clic o arrastra el marcador):
+                <i class="bi bi-map-fill"></i> Ubicación (arrastra o haz clic):
             </label>
             <div id="map-picker" class="rounded-3 border" style="height: 420px;"></div>
         </div>
@@ -32,83 +32,77 @@
 
     <div class="col-lg-6 mb-4">
         <div class="card border-0 shadow-sm p-4 h-100">
-            <form method="post" enctype="multipart/form-data" id="incidente-form">
+            <form method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ form|crispy }}
-                <button type="submit" class="btn btn-primary w-100 mt-4 py-2.5 fw-bold" id="submit-btn" disabled>
+                <button type="submit" class="btn btn-primary w-100 mt-4 fw-bold" id="submit-btn" disabled>
                     <i class="bi bi-shield-fill-plus"></i> Guardar Incidente
                 </button>
             </form>
         </div>
     </div>
 </div>
-{% endblock %}
 
-{% block scripts %}
-{{ block.super }}
 <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
 <script>
 (function() {
-    var latInput = document.getElementById('id_latitud');
-    var lngInput = document.getElementById('id_longitud');
-    var submitBtn = document.getElementById('submit-btn');
-    var gpsStatus = document.getElementById('gps-status');
-    var defaultLat = -17.7833, defaultLng = -63.1821;
+    var latIn = document.getElementById('id_latitud');
+    var lngIn = document.getElementById('id_longitud');
+    var btn = document.getElementById('submit-btn');
+    var gps = document.getElementById('gps-status');
+    var lat = -17.7833, lng = -63.1821;
 
-    function updateCoords(lat, lng, source) {
-        if (latInput) latInput.value = lat.toFixed(7);
-        if (lngInput) lngInput.value = lng.toFixed(7);
-        if (submitBtn) submitBtn.disabled = false;
-        if (gpsStatus) {
-            gpsStatus.className = 'alert alert-success d-flex align-items-center gap-2 mb-3';
-            gpsStatus.innerHTML = '<span><i class="bi bi-check-circle-fill"></i> Ubicación fijada por <strong>' + source + '</strong>: ' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</span>';
+    function setCoord(lat, lng, src) {
+        if (latIn) latIn.value = lat.toFixed(7);
+        if (lngIn) lngIn.value = lng.toFixed(7);
+        if (btn) btn.disabled = false;
+        if (gps) {
+            gps.className = 'alert alert-success d-flex align-items-center gap-2 mb-3';
+            gps.innerHTML = '<span><i class="bi bi-check-circle-fill"></i> Ubicación por <strong>' + src + '</strong>: ' + lat.toFixed(5) + ', ' + lng.toFixed(5) + '</span>';
         }
     }
 
-    updateCoords(defaultLat, defaultLng, 'defecto (Santa Cruz)');
+    setCoord(lat, lng, 'defecto');
 
     if (typeof L === 'undefined') {
-        if (gpsStatus) {
-            gpsStatus.className = 'alert alert-danger d-flex align-items-center gap-2 mb-3';
-            gpsStatus.innerHTML = '<span><i class="bi bi-exclamation-triangle-fill"></i> Error al cargar el mapa. Ingresa las coordenadas manualmente.</span>';
-        }
-        if (latInput) latInput.setAttribute('type', 'text');
-        if (lngInput) lngInput.setAttribute('type', 'text');
-    } else {
-        var map = L.map('map-picker').setView([defaultLat, defaultLng], 13);
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>, &copy; CARTO', maxZoom: 20
-        }).addTo(map);
+        if (gps) { gps.className = 'alert alert-danger'; gps.innerHTML = 'Error al cargar mapa'; }
+        if (latIn) latIn.type = 'text';
+        if (lngIn) lngIn.type = 'text';
+        return;
+    }
 
-        var marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+    var map = L.map('map-picker').setView([lat, lng], 13);
+    L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        attribution: '© Google', maxZoom: 20
+    }).addTo(map);
 
-        marker.on('dragend', function() {
-            var pos = marker.getLatLng();
-            updateCoords(pos.lat, pos.lng, 'marcador manual');
-        });
+    var marker = L.marker([lat, lng], { draggable: true }).addTo(map);
 
-        map.on('click', function(e) {
-            marker.setLatLng(e.latlng);
-            updateCoords(e.latlng.lat, e.latlng.lng, 'clic en mapa');
-        });
+    marker.on('dragend', function() {
+        var p = marker.getLatLng();
+        setCoord(p.lat, p.lng, 'marcador');
+    });
+    map.on('click', function(e) {
+        marker.setLatLng(e.latlng);
+        setCoord(e.latlng.lat, e.latlng.lng, 'clic');
+    });
 
-        if ('geolocation' in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                function(pos) {
-                    var lat = pos.coords.latitude, lng = pos.coords.longitude;
-                    marker.setLatLng([lat, lng]);
-                    map.setView([lat, lng], 16);
-                    updateCoords(lat, lng, 'GPS');
-                },
-                function() {
-                    if (gpsStatus) {
-                        gpsStatus.className = 'alert alert-info d-flex align-items-center gap-2 mb-3';
-                        gpsStatus.innerHTML = '<span><i class="bi bi-info-circle-fill"></i> Sin señal GPS. Arrastra el marcador o haz clic en el mapa.</span>';
-                    }
-                },
-                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-            );
-        }
+    if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            function(pos) {
+                var a = pos.coords.latitude, b = pos.coords.longitude;
+                marker.setLatLng([a, b]);
+                map.setView([a, b], 16);
+                setCoord(a, b, 'GPS');
+            },
+            function() {
+                if (gps) {
+                    gps.className = 'alert alert-info d-flex align-items-center gap-2 mb-3';
+                    gps.innerHTML = '<span><i class="bi bi-info-circle-fill"></i> Sin GPS. Arrastra el marcador.</span>';
+                }
+            },
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+        );
     }
 })();
 </script>
