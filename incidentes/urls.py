@@ -7,6 +7,7 @@ urlpatterns = [
     path('crear/', views.IncidenteCrearView.as_view(), name='incidente_crear'),
     path('detalle/<int:pk>/', views.IncidenteDetalleView.as_view(), name='incidente_detalle'),
     path('mapa/', views.IncidenteMapaView.as_view(), name='incidente_mapa'),
+    path('api/mapa/', views.IncidenteMapaAPIView.as_view(), name='incidente_mapa_api'),
     path('bandeja-validacion/', views.IncidenteBandejaValidacionView.as_view(), name='incidente_bandeja_validacion'),
     path('validar/<int:pk>/<str:accion>/', views.IncidenteValidarAccionView.as_view(), name='incidente_validar_accion'),
 ]

@@ -24,36 +24,37 @@
 <script>
 (function() {
     var el = document.getElementById('map');
-    if (!el || typeof L === 'undefined') { console.error('Leaflet no cargó'); return; }
+    if (!el || typeof L === 'undefined') { console.error('Leaflet no disponible'); return; }
 
     var map = L.map(el).setView([-17.7833, -63.1821], 12);
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-        attribution: '© Google', maxZoom: 20
+        attribution: '&copy; Google', maxZoom: 20
     }).addTo(map);
 
-    var puntos = [
-        {% for i in incidentes %}
-        {% if i.latitud and i.longitud %}
-        { lat: {{ i.latitud|floatformat:-7 }}, lng: {{ i.longitud|floatformat:-7 }}, titulo: "{{ i.titulo|escapejs }}", tipo: "{{ i.tipo.nombre|escapejs }}", sector: "{{ i.sector.nombre|escapejs }}", desc: "{{ i.descripcion|escapejs }}" },
-        {% endif %}
-        {% endfor %}
-    ];
-
-    console.log('Incidentes a mostrar:', puntos.length);
-
-    puntos.forEach(function(p) {
-        var color = p.tipo.indexOf('Robo') !== -1 ? 'red' :
-                    p.tipo.indexOf('Asalto') !== -1 ? 'orange' : 'blue';
-        L.marker([p.lat, p.lng]).addTo(map).bindPopup(
-            '<b style="color:' + color + '">' + p.titulo + '</b><br>' +
-            '<small><b>Tipo:</b> ' + p.tipo + ' | <b>Sector:</b> ' + p.sector + '</small><br>' +
-            '<small>' + p.desc + '</small>'
-        );
-    });
-
     var u = new URLSearchParams(window.location.search);
-    if (u.get('lat') && u.get('lng'))
-        map.setView([parseFloat(u.get('lat')), parseFloat(u.get('lng'))], 17);
+    var targetLat = u.get('lat'), targetLng = u.get('lng');
+
+    if (targetLat && targetLng)
+        map.setView([parseFloat(targetLat), parseFloat(targetLng)], 17);
+
+    fetch('/incidentes/api/mapa/')
+        .then(function(r) { return r.json(); })
+        .then(function(puntos) {
+            console.log('Incidentes cargados por API:', puntos.length);
+            puntos.forEach(function(p) {
+                var color = p.tipo.indexOf('Robo') !== -1 ? 'red' :
+                            p.tipo.indexOf('Asalto') !== -1 ? 'orange' : 'blue';
+                var popup = '<b style="color:' + color + '">' + p.titulo + '</b><br>' +
+                    '<small><b>Tipo:</b> ' + p.tipo + ' | <b>Sector:</b> ' + p.sector + '</small><br>' +
+                    '<small>' + p.desc + '</small>';
+                if (p.img)
+                    popup += '<br><img src="' + p.img + '" style="max-height:120px;max-width:100%;border-radius:6px;margin-top:4px">';
+                var marker = L.marker([p.lat, p.lng]).addTo(map).bindPopup(popup, {maxWidth:300});
+                if (targetLat && String(p.lat) === targetLat && String(p.lng) === targetLng)
+                    setTimeout(function() { marker.openPopup(); }, 600);
+            });
+        })
+        .catch(function(e) { console.error('Error API mapa:', e); });
 
     setTimeout(function() { map.invalidateSize(); }, 300);
 })();

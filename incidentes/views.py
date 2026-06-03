@@ -1,6 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import JsonResponse
 from django.urls import reverse_lazy
-from django.views.generic import CreateView, DetailView, ListView, TemplateView
+from django.views.generic import CreateView, DetailView, ListView, TemplateView, View
 
 from .forms import IncidenteForm
 from .models import Incidente, Sector, TipoDelito
@@ -189,8 +190,25 @@ class IncidenteMapaView(LoginRequiredMixin, TemplateView):
         context['incidentes'] = Incidente.objects.filter(activo=True)
         return context
 
+
+class IncidenteMapaAPIView(LoginRequiredMixin, View):
+    def get(self, request):
+        qs = Incidente.objects.filter(activo=True).select_related('tipo', 'sector')
+        data = []
+        for i in qs:
+            data.append({
+                'lat': float(i.latitud),
+                'lng': float(i.longitud),
+                'id': i.id,
+                'titulo': i.titulo,
+                'tipo': i.tipo.nombre,
+                'sector': i.sector.nombre,
+                'desc': i.descripcion[:200],
+                'img': i.imagen.url if i.imagen else '',
+            })
+        return JsonResponse(data, safe=False)
+
 from django.contrib.auth.mixins import UserPassesTestMixin
-from django.views.generic import View
 from alertas.models import Alerta, SuscripcionAlerta
 
 class IncidenteBandejaValidacionView(LoginRequiredMixin, UserPassesTestMixin, ListView):
