@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 {% endblock %}
 
 {% block content %}
@@ -11,7 +11,7 @@
         <h2 class="text-primary fw-bold mb-1">
             <i class="bi bi-map-fill"></i> Mapa de Incidentes y Zonas de Riesgo
         </h2>
-        <p class="text-muted">Explora visualmente los reportes de delincuencia georreferenciados en la ciudad y visualiza las densidades de incidentes (Mapa de Calor).</p>
+        <p class="text-muted">Explora visualmente los reportes de delincuencia georreferenciados en la ciudad.</p>
     </div>
 </div>
 <div class="card border-0 shadow-sm p-2 mb-4">
@@ -38,6 +38,6 @@ window.__INCIDENTES__ = [
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script src="{% static 'js/mapa_incidentes.js' %}"></script>
 {% endblock %}
