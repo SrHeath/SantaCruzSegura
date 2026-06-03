@@ -47,7 +47,7 @@ class CSPMiddleware:
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' cdn.jsdelivr.net; "
             "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com fonts.gstatic.com; "
             "font-src 'self' cdn.jsdelivr.net fonts.gstatic.com fonts.googleapis.com; "
-            "img-src 'self' data: mt1.google.com res.cloudinary.com; "
+            "img-src 'self' data: mt1.google.com res.cloudinary.com cdn.jsdelivr.net; "
             "connect-src 'self'; "
             "frame-src 'none'; "
             "base-uri 'self'; "

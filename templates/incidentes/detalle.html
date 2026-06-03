@@ -125,7 +125,9 @@
     L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
         attribution: '© Google', maxZoom: 20
     }).addTo(map);
-    L.marker([lat_value, lng_value]).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
+    L.circleMarker([lat_value, lng_value], {
+        radius: 12, fillColor: '#dc3545', color: '#000', weight: 2, fillOpacity: 0.8
+    }).addTo(map).bindPopup('<strong>{{ incidente.titulo|escapejs }}</strong>');
     setTimeout(function() { map.invalidateSize(); }, 300);
 })();
 </script>
