@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+<link rel="stylesheet" href="{% static 'css/leaflet.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -38,6 +38,6 @@ window.__INCIDENTES__ = [
 
 {% block scripts %}
 {{ block.super }}
-<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script src="{% static 'js/leaflet.js' %}"></script>
 <script src="{% static 'js/mapa_incidentes.js' %}"></script>
 {% endblock %}
