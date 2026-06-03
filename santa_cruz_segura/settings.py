@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'auditoria.middleware.ThreadLocalMiddleware',
+    'auditoria.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'santa_cruz_segura.urls'
@@ -184,6 +185,7 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_HSTS_SECONDS = 31536000 if not DEBUG else 0
 SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
 SECURE_HSTS_PRELOAD = not DEBUG
+SECURE_REFERRER_POLICY = 'same-origin'
 
 # HTTPS behind proxy (Railway terminates SSL)
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

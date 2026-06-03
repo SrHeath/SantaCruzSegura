@@ -6,7 +6,7 @@ from django.shortcuts import redirect
 from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views.generic import CreateView, ListView, TemplateView, UpdateView
-from django.http import HttpResponseForbidden
+from django.http import HttpResponse
 from datetime import timedelta
 
 from auditoria.models import AuditLog
@@ -31,9 +31,12 @@ class LoginUsuario(LoginView):
             fecha__gte=cutoff
         ).count()
         if recent >= MAX_LOGIN_ATTEMPTS_IP:
-            return HttpResponseForbidden(
-                f"Demasiados intentos de login desde esta IP. Espera {LOGIN_BLOCK_MINUTES} minutos."
+            response = HttpResponse(
+                f"Demasiados intentos de login desde esta IP. Espera {LOGIN_BLOCK_MINUTES} minutos.",
+                status=429,
             )
+            response['Retry-After'] = str(LOGIN_BLOCK_MINUTES * 60)
+            return response
         return super().dispatch(request, *args, **kwargs)
 
 
@@ -54,9 +57,12 @@ class RegistroUsuario(CreateView):
             fecha__gte=cutoff
         ).count()
         if registros_recientes >= 3:
-            return HttpResponseForbidden(
-                "Has excedido el limite de registros. Intenta mas tarde."
+            response = HttpResponse(
+                "Has excedido el limite de registros. Intenta mas tarde.",
+                status=429,
             )
+            response['Retry-After'] = '3600'
+            return response
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
