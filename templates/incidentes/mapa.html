@@ -34,7 +34,7 @@
     var puntos = [
         {% for i in incidentes %}
         {% if i.latitud and i.longitud %}
-        { lat: {{ i.latitud }}, lng: {{ i.longitud }}, titulo: "{{ i.titulo|escapejs }}", tipo: "{{ i.tipo.nombre|escapejs }}", sector: "{{ i.sector.nombre|escapejs }}", desc: "{{ i.descripcion|escapejs }}" },
+        { lat: {{ i.latitud|unlocalize }}, lng: {{ i.longitud|unlocalize }}, titulo: "{{ i.titulo|escapejs }}", tipo: "{{ i.tipo.nombre|escapejs }}", sector: "{{ i.sector.nombre|escapejs }}", desc: "{{ i.descripcion|escapejs }}" },
         {% endif %}
         {% endfor %}
     ];
